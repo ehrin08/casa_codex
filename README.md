@@ -81,6 +81,22 @@ DB_PASSWORD=your_mysql_password
 php artisan migrate
 ```
 
+## Database Structure
+
+The initial Sprint 1 schema keeps Laravel's default `users`, `password_reset_tokens`, `sessions`, cache, and queue tables, then adds the core Casa Paraiso domain tables:
+
+- `roles` for management, therapist, and customer access labels.
+- `customer_profiles` and `therapist_profiles` for customer/staff records.
+- `service_categories` and `services` for spa service setup.
+- `therapist_availabilities` and `appointments` for future scheduling.
+- `transactions` and `therapist_commissions` for cash recording and commission reporting.
+- `promotions`, `customer_rfm_scores`, and `promotion_usages` for future RFM-based promotions.
+- `customer_reviews` for ratings and sentiment labels.
+- `notifications` for in-system user notifications.
+- `appointment_status_histories` for future appointment audit trails.
+
+See `docs/database-design.md` for table relationships and seed data notes.
+
 ## Sprint 1 Checklist
 
 - [x] Laravel project foundation created.
@@ -91,3 +107,4 @@ php artisan migrate
 - [x] Initial Livewire folders created for Management, Therapist, Customer, and Auth areas.
 - [x] Initial Blade view folders created for layouts, management, therapist, and customer areas.
 - [x] Project README documented for local setup and database setup.
+- [x] Initial database schema, models, and development seeders added.
