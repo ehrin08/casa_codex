@@ -56,6 +56,8 @@ php artisan serve
 npm run dev
 ```
 
+The app will be available from the Laravel local server, usually `http://127.0.0.1:8000`.
+
 ## Database Setup
 
 1. Create a MySQL database for the project, for example:
@@ -81,6 +83,21 @@ DB_PASSWORD=your_mysql_password
 php artisan migrate
 ```
 
+To rebuild the local development database with seeded test data:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+Seeded users are development/test records only. All seeded test users use the password `password`.
+
+## Placeholder Routes
+
+- `/` - public landing page
+- `/management` - management area placeholder
+- `/therapist` - therapist area placeholder
+- `/customer` - customer area placeholder
+
 ## Database Structure
 
 The initial Sprint 1 schema keeps Laravel's default `users`, `password_reset_tokens`, `sessions`, cache, and queue tables, then adds the core Casa Paraiso domain tables:
@@ -97,6 +114,19 @@ The initial Sprint 1 schema keeps Laravel's default `users`, `password_reset_tok
 
 See `docs/database-design.md` for table relationships and seed data notes.
 
+## Development Seed Data
+
+The current seeders add safe fake/test data only:
+
+- Roles: management, therapist, customer.
+- Sample service categories and spa services.
+- Test users for management, therapist, and customer roles.
+- Sample therapist profiles linked to therapist users.
+- Sample customer profiles, including one walk-in style record without a linked user.
+- Recurring weekly therapist availability records.
+
+No private credentials or real customer/staff records are seeded.
+
 ## Sprint 1 Checklist
 
 - [x] Laravel project foundation created.
@@ -108,3 +138,8 @@ See `docs/database-design.md` for table relationships and seed data notes.
 - [x] Initial Blade view folders created for layouts, management, therapist, and customer areas.
 - [x] Project README documented for local setup and database setup.
 - [x] Initial database schema, models, and development seeders added.
+- [x] Shared Blade layout created.
+- [x] Placeholder routes created for public, management, therapist, and customer areas.
+- [x] Safe development users, profiles, and therapist availability seed data added.
+
+See `docs/sprint-1-foundation.md` for a concise Sprint 1 foundation summary.

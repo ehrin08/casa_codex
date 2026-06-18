@@ -83,5 +83,9 @@ Development/test seeders currently add:
 - Roles: Management, Therapist, Customer.
 - Service categories: Massage Therapy, Body Treatments, Wellness Packages.
 - Sample services: Swedish Massage, Deep Tissue Massage, Ventosa Massage, Body Scrub, Relaxation Package.
+- Test users for management, therapist, and customer roles. All seeded users use the test password `password`.
+- Therapist profiles for fake therapist users.
+- Customer profiles for fake customer users and a walk-in style record.
+- Recurring therapist availability windows for development schedule placeholders.
 
 No real private credentials are seeded.

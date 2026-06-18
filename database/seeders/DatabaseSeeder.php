@@ -18,6 +18,10 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             ServiceCategorySeeder::class,
             ServiceSeeder::class,
+            DevelopmentUserSeeder::class,
+            TherapistProfileSeeder::class,
+            CustomerProfileSeeder::class,
+            TherapistAvailabilitySeeder::class,
         ]);
     }
 }
