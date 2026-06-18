@@ -7,40 +7,49 @@
 @section('content')
     <div class="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
         <div class="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
-            <h2 class="text-xl font-semibold text-zinc-950">Foundation setup is ready</h2>
+            <h2 class="text-xl font-semibold text-zinc-950">Welcome to Casa Paraiso</h2>
             <p class="mt-3 leading-7 text-zinc-600">
-                This Sprint 1 foundation includes Laravel, Livewire, Tailwind CSS, Vite, MySQL migrations, seeders, shared routes, and placeholder pages for the main system areas.
+                The system foundation and secure account sign-in are ready for the main management, therapist, and customer workflows being built in upcoming sprints.
             </p>
             <div class="mt-6 rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                The system is currently in Sprint 1 foundation setup. Full authentication, dashboards, booking, transactions, promotions, analytics, and notifications will be added in later tasks.
+                Full dashboards, booking, transactions, promotions, analytics, and notifications will be added in later tasks.
             </div>
         </div>
 
         <div class="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
             <h2 class="text-xl font-semibold text-zinc-950">Main areas</h2>
             <p class="mt-3 leading-7 text-zinc-600">
-                Use these placeholder pages to confirm the base navigation and role-area structure.
+                Sign in to continue to the workspace assigned to your account.
             </p>
+            @guest
+                <a href="{{ route('login') }}" class="mt-5 inline-flex rounded-md bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800">
+                    Log in
+                </a>
+            @else
+                <a href="{{ route('dashboard') }}" class="mt-5 inline-flex rounded-md bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800">
+                    Go to my area
+                </a>
+            @endguest
         </div>
     </div>
 
     <div class="mt-8 grid gap-4 md:grid-cols-3">
-        <a href="{{ route('management.index') }}" class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-600 hover:shadow-md">
+        <article class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
             <p class="text-sm font-semibold uppercase tracking-wide text-emerald-700">Management</p>
             <h3 class="mt-2 text-lg font-semibold text-zinc-950">Operations foundation</h3>
             <p class="mt-2 text-sm leading-6 text-zinc-600">Placeholder for services, staff, customers, appointments, reports, promotions, and reviews.</p>
-        </a>
+        </article>
 
-        <a href="{{ route('therapist.index') }}" class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-sky-600 hover:shadow-md">
+        <article class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
             <p class="text-sm font-semibold uppercase tracking-wide text-sky-700">Therapist</p>
             <h3 class="mt-2 text-lg font-semibold text-zinc-950">Staff workspace</h3>
             <p class="mt-2 text-sm leading-6 text-zinc-600">Placeholder for schedules, assigned appointments, commissions, and customer notes.</p>
-        </a>
+        </article>
 
-        <a href="{{ route('customer.index') }}" class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-rose-600 hover:shadow-md">
+        <article class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
             <p class="text-sm font-semibold uppercase tracking-wide text-rose-700">Customer</p>
             <h3 class="mt-2 text-lg font-semibold text-zinc-950">Customer portal</h3>
             <p class="mt-2 text-sm leading-6 text-zinc-600">Placeholder for appointment booking, personal appointments, services, promotions, and reviews.</p>
-        </a>
+        </article>
     </div>
 @endsection

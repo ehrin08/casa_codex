@@ -2,7 +2,7 @@
 
 Casa Paraiso Spa Management System is a web-based service management and appointment booking system for Casa Paraiso - Body and Wellness Spa.
 
-This repository currently contains the Sprint 1 foundation only. Business modules such as authentication, dashboards, booking, transactions, promotions, analytics, reports, reviews, and notifications will be added in later tasks.
+This repository contains the Sprint 1 foundation and the Sprint 2 session authentication flow. Business modules such as dashboards, booking, transactions, promotions, analytics, reports, reviews, and notifications will be added in later tasks.
 
 ## Tech Stack
 
@@ -91,12 +91,37 @@ php artisan migrate:fresh --seed
 
 Seeded users are development/test records only. All seeded test users use the password `password`.
 
-## Placeholder Routes
+## Authentication
+
+The app uses a controller-based Laravel session authentication flow without an additional starter-kit package.
+
+- `GET /login` displays the login form to guests.
+- `POST /login` validates credentials, authenticates the user, and regenerates the session.
+- `GET /dashboard` requires authentication and redirects to the user's role area.
+- `POST /logout` requires authentication, logs out the user, invalidates the session, and regenerates the CSRF token.
+
+Laravel's `web` middleware provides cookie-backed sessions and CSRF protection. The three role-area placeholders require authentication, but cross-role authorization is intentionally deferred to CPSMS-35.
+
+### Development Login Accounts
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Management | `management@example.test` | `password` |
+| Therapist | `maya.therapist@example.test` | `password` |
+| Therapist | `leo.therapist@example.test` | `password` |
+| Customer | `ana.customer@example.test` | `password` |
+| Customer | `miguel.customer@example.test` | `password` |
+
+These are fake local development accounts. Do not use the shared test password in production.
+
+## Application Routes
 
 - `/` - public landing page
-- `/management` - management area placeholder
-- `/therapist` - therapist area placeholder
-- `/customer` - customer area placeholder
+- `/login` - guest login page
+- `/dashboard` - authenticated role redirect
+- `/management` - authenticated management area placeholder
+- `/therapist` - authenticated therapist area placeholder
+- `/customer` - authenticated customer area placeholder
 
 ## Database Structure
 
