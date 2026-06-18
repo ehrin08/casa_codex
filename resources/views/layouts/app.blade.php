@@ -41,6 +41,10 @@
                                 >
                                     Management
                                 </a>
+                                <a href="{{ route('management.services.index') }}" class="rounded-md px-3 py-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950">Services</a>
+                                <a href="{{ route('management.therapists.index') }}" class="rounded-md px-3 py-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950">Therapists</a>
+                                <a href="{{ route('management.customers.index') }}" class="rounded-md px-3 py-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950">Customers</a>
+                                <a href="{{ route('management.availability.index') }}" class="rounded-md px-3 py-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950">Availability</a>
                             @elseif (auth()->user()->isTherapist())
                                 <a
                                     href="{{ route('therapist.index') }}"
@@ -82,6 +86,18 @@
                 </section>
 
                 <section class="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+                    @if (session('success'))
+                        <div class="mb-6 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900" role="status">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    @if ($errors->any())
+                        <div class="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
+                            Please correct the highlighted fields and try again.
+                        </div>
+                    @endif
+
                     @yield('content')
                 </section>
             </main>

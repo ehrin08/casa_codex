@@ -2,7 +2,7 @@
 
 Casa Paraiso Spa Management System is a web-based service management and appointment booking system for Casa Paraiso - Body and Wellness Spa.
 
-This repository contains the Sprint 1 foundation and the Sprint 2 authentication and role-based access control foundation. Business modules such as dashboards, booking, transactions, promotions, analytics, reports, reviews, and notifications will be added in later tasks.
+This repository contains the Sprint 1 foundation plus Sprint 2 authentication, role-based access control, and core management CRUD modules. Business modules such as dashboards, booking, transactions, promotions, analytics, reports, reviews, and notifications will be added in later tasks.
 
 ## Tech Stack
 
@@ -124,12 +124,31 @@ Guests are redirected to `/login`. After login, `/dashboard` sends each user to 
 
 These are fake local development accounts. Do not use the shared test password in production.
 
+## Management Modules
+
+Management users can maintain four core record types from `/management`:
+
+| Module | Base route | Supported actions |
+| --- | --- | --- |
+| Services | `/management/services` | List, create, edit, deactivate, reactivate |
+| Therapist profiles | `/management/therapists` | List, create, edit, deactivate, reactivate |
+| Customer profiles | `/management/customers` | List, create, edit, deactivate, reactivate |
+| Therapist availability | `/management/availability` | List, create, edit, deactivate, reactivate |
+
+These controller-based modules use dedicated Form Requests for validation. Therapist and customer profiles may link only to an unused user account with the matching role. Customer profiles may also remain unlinked for walk-in records. Availability records use either a recurring weekday or a specific date and require an end time later than the start time.
+
+Records are not deleted by these modules. Existing `status` or `is_active` fields are toggled so historical records and future relationships remain intact. All routes use both `auth` and `role:management` middleware. See `docs/sprint-2-management-modules.md` for details.
+
 ## Application Routes
 
 - `/` - public landing page
 - `/login` - guest login page
 - `/dashboard` - authenticated role redirect
-- `/management` - management-only area placeholder
+- `/management` - management-only module hub
+- `/management/services` - management service records
+- `/management/therapists` - management therapist profiles
+- `/management/customers` - management customer profiles
+- `/management/availability` - management therapist availability
 - `/therapist` - therapist-only area placeholder
 - `/customer` - customer-only area placeholder
 

@@ -2,6 +2,10 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Management\CustomerProfileController;
+use App\Http\Controllers\Management\ServiceController;
+use App\Http\Controllers\Management\TherapistAvailabilityController;
+use App\Http\Controllers\Management\TherapistProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -17,9 +21,26 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-    Route::view('/management', 'management.index')
-        ->middleware('role:management')
-        ->name('management.index');
+    Route::prefix('management')->name('management.')->middleware('role:management')->group(function () {
+        Route::view('/', 'management.index')->name('index');
+
+        Route::patch('services/{service}/toggle-status', [ServiceController::class, 'toggleStatus'])
+            ->name('services.toggle-status');
+        Route::resource('services', ServiceController::class)->except(['show', 'destroy']);
+
+        Route::patch('therapists/{therapist}/toggle-status', [TherapistProfileController::class, 'toggleStatus'])
+            ->name('therapists.toggle-status');
+        Route::resource('therapists', TherapistProfileController::class)->except(['show', 'destroy']);
+
+        Route::patch('customers/{customer}/toggle-status', [CustomerProfileController::class, 'toggleStatus'])
+            ->name('customers.toggle-status');
+        Route::resource('customers', CustomerProfileController::class)->except(['show', 'destroy']);
+
+        Route::patch('availability/{availability}/toggle-status', [TherapistAvailabilityController::class, 'toggleStatus'])
+            ->name('availability.toggle-status');
+        Route::resource('availability', TherapistAvailabilityController::class)
+            ->except(['show', 'destroy']);
+    });
     Route::view('/therapist', 'therapist.index')
         ->middleware('role:therapist')
         ->name('therapist.index');
