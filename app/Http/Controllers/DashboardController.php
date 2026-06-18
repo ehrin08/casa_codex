@@ -9,10 +9,12 @@ class DashboardController extends Controller
 {
     public function __invoke(Request $request): RedirectResponse
     {
-        $route = match ($request->user()->role?->name) {
-            'management' => 'management.index',
-            'therapist' => 'therapist.index',
-            'customer' => 'customer.index',
+        $user = $request->user();
+
+        $route = match (true) {
+            $user->isManagement() => 'management.index',
+            $user->isTherapist() => 'therapist.index',
+            $user->isCustomer() => 'customer.index',
             default => 'home',
         };
 

@@ -56,6 +56,26 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
+    public function hasRole(string $role): bool
+    {
+        return $this->role?->name === $role;
+    }
+
+    public function isManagement(): bool
+    {
+        return $this->hasRole('management');
+    }
+
+    public function isTherapist(): bool
+    {
+        return $this->hasRole('therapist');
+    }
+
+    public function isCustomer(): bool
+    {
+        return $this->hasRole('customer');
+    }
+
     public function customerProfile(): HasOne
     {
         return $this->hasOne(CustomerProfile::class);

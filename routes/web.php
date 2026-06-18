@@ -17,8 +17,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-    // CPSMS-35 will add role authorization to these authenticated placeholders.
-    Route::view('/management', 'management.index')->name('management.index');
-    Route::view('/therapist', 'therapist.index')->name('therapist.index');
-    Route::view('/customer', 'customer.index')->name('customer.index');
+    Route::view('/management', 'management.index')
+        ->middleware('role:management')
+        ->name('management.index');
+    Route::view('/therapist', 'therapist.index')
+        ->middleware('role:therapist')
+        ->name('therapist.index');
+    Route::view('/customer', 'customer.index')
+        ->middleware('role:customer')
+        ->name('customer.index');
 });

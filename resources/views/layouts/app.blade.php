@@ -34,12 +34,28 @@
                         @endguest
 
                         @auth
-                            <a
-                                href="{{ route('dashboard') }}"
-                                class="rounded-md px-3 py-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950"
-                            >
-                                My area
-                            </a>
+                            @if (auth()->user()->isManagement())
+                                <a
+                                    href="{{ route('management.index') }}"
+                                    class="rounded-md px-3 py-2 transition {{ request()->routeIs('management.*') ? 'bg-emerald-700 text-white' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950' }}"
+                                >
+                                    Management
+                                </a>
+                            @elseif (auth()->user()->isTherapist())
+                                <a
+                                    href="{{ route('therapist.index') }}"
+                                    class="rounded-md px-3 py-2 transition {{ request()->routeIs('therapist.*') ? 'bg-emerald-700 text-white' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950' }}"
+                                >
+                                    Therapist
+                                </a>
+                            @elseif (auth()->user()->isCustomer())
+                                <a
+                                    href="{{ route('customer.index') }}"
+                                    class="rounded-md px-3 py-2 transition {{ request()->routeIs('customer.*') ? 'bg-emerald-700 text-white' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950' }}"
+                                >
+                                    Customer
+                                </a>
+                            @endif
                             <span class="px-2 text-zinc-500">{{ auth()->user()->name }}</span>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf

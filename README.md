@@ -2,7 +2,7 @@
 
 Casa Paraiso Spa Management System is a web-based service management and appointment booking system for Casa Paraiso - Body and Wellness Spa.
 
-This repository contains the Sprint 1 foundation and the Sprint 2 session authentication flow. Business modules such as dashboards, booking, transactions, promotions, analytics, reports, reviews, and notifications will be added in later tasks.
+This repository contains the Sprint 1 foundation and the Sprint 2 authentication and role-based access control foundation. Business modules such as dashboards, booking, transactions, promotions, analytics, reports, reviews, and notifications will be added in later tasks.
 
 ## Tech Stack
 
@@ -100,7 +100,17 @@ The app uses a controller-based Laravel session authentication flow without an a
 - `GET /dashboard` requires authentication and redirects to the user's role area.
 - `POST /logout` requires authentication, logs out the user, invalidates the session, and regenerates the CSRF token.
 
-Laravel's `web` middleware provides cookie-backed sessions and CSRF protection. The three role-area placeholders require authentication, but cross-role authorization is intentionally deferred to CPSMS-35.
+Laravel's `web` middleware provides cookie-backed sessions and CSRF protection. Role middleware verifies the authenticated user's assigned role and returns `403 Forbidden` for cross-role access.
+
+### Role-Based Access
+
+| Protected route | Required role |
+| --- | --- |
+| `/management` | Management |
+| `/therapist` | Therapist |
+| `/customer` | Customer |
+
+Guests are redirected to `/login`. After login, `/dashboard` sends each user to their assigned role area. Authenticated navigation displays only that role area's link and the logout action. See `docs/rbac.md` for the implementation structure.
 
 ### Development Login Accounts
 
@@ -119,9 +129,9 @@ These are fake local development accounts. Do not use the shared test password i
 - `/` - public landing page
 - `/login` - guest login page
 - `/dashboard` - authenticated role redirect
-- `/management` - authenticated management area placeholder
-- `/therapist` - authenticated therapist area placeholder
-- `/customer` - authenticated customer area placeholder
+- `/management` - management-only area placeholder
+- `/therapist` - therapist-only area placeholder
+- `/customer` - customer-only area placeholder
 
 ## Database Structure
 
