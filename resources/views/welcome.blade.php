@@ -12,7 +12,7 @@
                 The system foundation and secure account sign-in are ready for the main management, therapist, and customer workflows being built in upcoming sprints.
             </p>
             <div class="mt-6 rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                Full dashboards, booking, transactions, promotions, analytics, and notifications will be added in later tasks.
+                Appointment booking, schedule validation, role-specific appointment views, and in-system notifications are available. Transactions, promotions, and analytics will be added in later tasks.
             </div>
         </div>
 

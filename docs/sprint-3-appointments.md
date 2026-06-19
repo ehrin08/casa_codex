@@ -32,6 +32,22 @@ Each actual status change creates an `appointment_status_histories` record conta
 
 Customer booking routes remain customer-only. Management appointment routes use the existing `auth` and `role:management` middleware; customers, therapists, and guests cannot update status.
 
+## CPSMS-39 Appointment Views
+
+Management appointment pages display all appointments and support optional date, status, therapist, and customer filters. Details include the customer, therapist, service snapshot, date, time, status, notes, and status history.
+
+Therapist users can open `/therapist/schedule` to see today's appointments and upcoming assignments for their linked therapist profile. `/therapist/appointments/{appointment}` returns a detail page only when the appointment is assigned to that therapist.
+
+Customer users can open `/customer/appointments` to see upcoming and past appointments linked to their customer profile. The existing detail route remains customer-owned and returns a not-found response for another customer's appointment.
+
+## Booking Notifications
+
+The existing `notifications` table stores synchronous in-system notifications. A successful booking notifies all management users and the assigned therapist when a linked therapist user exists. An actual status change notifies the linked customer and assigned therapist. Notification data includes the appointment ID and current status.
+
+All authenticated roles can open `/notifications`. Queries are scoped through the authenticated user's notification relationship, and the read action verifies recipient ownership before setting `is_read` and `read_at`. Submitting an unchanged appointment status does not create duplicate history or notifications.
+
+Email delivery and real-time broadcasting are intentionally not enabled. The feature requires no SMTP credentials and performs no external delivery during development or tests.
+
 ## Deferred Work
 
-Full therapist schedule views, notifications, payments, transactions, commissions, and later analytics remain outside CPSMS-38.
+Payments, transactions, commissions, email delivery, real-time broadcasting, and later analytics remain outside Sprint 3.

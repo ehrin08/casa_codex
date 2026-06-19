@@ -14,15 +14,7 @@
             </a>
         </article>
 
-        @foreach ([
-            ['title' => 'My Appointments', 'description' => 'Upcoming and past appointment lists will be added in the scheduling workflow.'],
-            ['title' => 'Promotions and Reviews', 'description' => 'Customer offers and service feedback will be available in later sprints.'],
-        ] as $section)
-            <article class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
-                <h2 class="text-lg font-semibold text-zinc-950">{{ $section['title'] }}</h2>
-                <p class="mt-2 text-sm leading-6 text-zinc-600">{{ $section['description'] }}</p>
-                <p class="mt-4 text-xs font-semibold uppercase tracking-wide text-zinc-400">Coming later</p>
-            </article>
-        @endforeach
+        <a href="{{ route('customer.appointments.index') }}" class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-600 hover:shadow-md"><h2 class="text-lg font-semibold text-zinc-950">My Appointments</h2><p class="mt-2 text-sm leading-6 text-zinc-600">Review upcoming and previous appointment details.</p><p class="mt-4 text-xs font-semibold uppercase tracking-wide text-emerald-700">View appointments</p></a>
+        <a href="{{ route('notifications.index') }}" class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-600 hover:shadow-md"><h2 class="text-lg font-semibold text-zinc-950">Notifications</h2><p class="mt-2 text-sm leading-6 text-zinc-600">Review appointment status updates.</p><p class="mt-4 text-xs font-semibold uppercase tracking-wide text-emerald-700">View notifications</p></a>
     </div>
 @endsection

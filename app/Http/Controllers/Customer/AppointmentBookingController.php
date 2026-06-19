@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\StoreAppointmentRequest;
-use App\Models\Appointment;
 use App\Models\CustomerProfile;
 use App\Models\Service;
 use App\Models\TherapistProfile;
@@ -51,17 +50,6 @@ class AppointmentBookingController extends Controller
         return redirect()
             ->route('customer.appointments.show', $appointment)
             ->with('success', 'Your appointment request has been submitted successfully.');
-    }
-
-    public function show(Request $request, Appointment $appointment): View
-    {
-        $customerProfile = $this->activeCustomerProfile($request);
-
-        abort_unless($appointment->customer_profile_id === $customerProfile->id, 404);
-
-        $appointment->load(['service', 'therapistProfile']);
-
-        return view('customer.appointments.show', compact('appointment'));
     }
 
     private function activeCustomerProfile(Request $request): CustomerProfile

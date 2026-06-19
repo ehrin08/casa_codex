@@ -2,7 +2,7 @@
 
 Casa Paraiso Spa Management System is a web-based service management and appointment booking system for Casa Paraiso - Body and Wellness Spa.
 
-This repository contains the Sprint 1 foundation, Sprint 2 authentication and management modules, and the Sprint 3 customer booking, scheduling, and appointment status workflow. Later tasks will add therapist schedule views, notifications, transactions, promotions, analytics, reports, and reviews.
+This repository contains the Sprint 1 foundation, Sprint 2 authentication and management modules, and the Sprint 3 appointment booking, scheduling, role-specific views, status tracking, and in-system notification workflow. Later tasks will add transactions, promotions, analytics, reports, and reviews.
 
 ## Tech Stack
 
@@ -109,8 +109,11 @@ Laravel's `web` middleware provides cookie-backed sessions and CSRF protection. 
 | `/management` | Management |
 | `/management/appointments` | Management |
 | `/therapist` | Therapist |
+| `/therapist/schedule` | Therapist |
 | `/customer` | Customer |
 | `/customer/book-appointment` | Customer |
+| `/customer/appointments` | Customer |
+| `/notifications` | Any authenticated user; own records only |
 
 Guests are redirected to `/login`. After login, `/dashboard` sends each user to their assigned role area. Authenticated navigation displays only that role area's link and the logout action. See `docs/rbac.md` for the implementation structure.
 
@@ -155,11 +158,16 @@ Records are not deleted by these modules. Existing `status` or `is_active` field
 - `/management/therapists` - management therapist profiles
 - `/management/customers` - management customer profiles
 - `/management/availability` - management therapist availability
-- `/therapist` - therapist-only area placeholder
+- `/therapist` - therapist-only area
+- `/therapist/schedule` - assigned appointments for today and upcoming dates
+- `/therapist/appointments/{appointment}` - therapist-owned appointment detail
 - `/customer` - customer-only area
+- `GET /customer/appointments` - customer-owned upcoming and past appointment list
 - `GET /customer/book-appointment` - customer-only appointment booking form
 - `POST /customer/book-appointment` - validate and create a pending customer appointment
 - `GET /customer/appointments/{appointment}` - customer-owned appointment confirmation
+- `GET /notifications` - authenticated user's notification list
+- `PATCH /notifications/{notification}/read` - mark an owned notification as read
 
 ## Customer Appointment Booking
 
@@ -179,6 +187,16 @@ Bookings lock the selected therapist while availability and conflicts are checke
 
 Management users can set an appointment to `pending`, `confirmed`, `completed`, `cancelled`, or `no_show`. Each actual status change records the previous status, new status, management user, optional notes, and change time in `appointment_status_histories`. Submitting the current status again does not create duplicate history. Customers, therapists, and guests cannot access the management status workflow.
 
+### Appointment Views
+
+Management users can view every appointment and filter by date, status, therapist, and customer. Therapist users see only appointments assigned to their linked therapist profile, grouped into today's schedule and upcoming work. Customer users see only appointments linked to their customer profile, separated into upcoming and past lists. Therapist and customer appointment details return `404 Not Found` when the appointment belongs to another profile.
+
+### In-System Notifications
+
+Creating a booking records an unread notification for every management user and for the assigned therapist when that profile has a linked user. An actual status change records an unread notification for the linked customer and assigned therapist. Repeating the current status creates neither history nor another notification.
+
+Notifications are synchronous database records in the existing `notifications` table. Each record stores the recipient, title, message, event type, unread state, read timestamp, and appointment reference data. Authenticated users can list and mark only their own notifications as read. Email delivery is intentionally deferred; no SMTP credentials, external delivery, queue worker, or real-time broadcasting are required.
+
 ## Database Structure
 
 The initial Sprint 1 schema keeps Laravel's default `users`, `password_reset_tokens`, `sessions`, cache, and queue tables, then adds the core Casa Paraiso domain tables:
@@ -186,12 +204,12 @@ The initial Sprint 1 schema keeps Laravel's default `users`, `password_reset_tok
 - `roles` for management, therapist, and customer access labels.
 - `customer_profiles` and `therapist_profiles` for customer/staff records.
 - `service_categories` and `services` for spa service setup.
-- `therapist_availabilities` and `appointments` for future scheduling.
+- `therapist_availabilities` and `appointments` for scheduling.
 - `transactions` and `therapist_commissions` for cash recording and commission reporting.
 - `promotions`, `customer_rfm_scores`, and `promotion_usages` for future RFM-based promotions.
 - `customer_reviews` for ratings and sentiment labels.
 - `notifications` for in-system user notifications.
-- `appointment_status_histories` for future appointment audit trails.
+- `appointment_status_histories` for appointment audit trails.
 
 See `docs/database-design.md` for table relationships and seed data notes.
 

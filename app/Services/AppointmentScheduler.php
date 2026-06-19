@@ -13,6 +13,10 @@ use Illuminate\Validation\ValidationException;
 
 class AppointmentScheduler
 {
+    public function __construct(
+        private readonly AppointmentNotificationService $notificationService,
+    ) {}
+
     public function schedule(
         CustomerProfile $customerProfile,
         int $serviceId,
@@ -71,7 +75,7 @@ class AppointmentScheduler
                 ]);
             }
 
-            return Appointment::create([
+            $appointment = Appointment::create([
                 'customer_profile_id' => $customerProfile->id,
                 'therapist_profile_id' => $therapist->id,
                 'service_id' => $service->id,
@@ -84,6 +88,10 @@ class AppointmentScheduler
                 'service_price_snapshot' => $service->price,
                 'notes' => $notes,
             ]);
+
+            $this->notificationService->appointmentBooked($appointment);
+
+            return $appointment;
         });
     }
 

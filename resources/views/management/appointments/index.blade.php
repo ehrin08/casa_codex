@@ -9,6 +9,16 @@
         <a href="{{ route('management.index') }}" class="text-sm font-medium text-zinc-600 hover:text-zinc-950">Back to management</a>
     </div>
 
+    <form method="GET" action="{{ route('management.appointments.index') }}" class="mb-6 rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div><label for="appointment_date" class="block text-sm font-medium text-zinc-700">Date</label><input id="appointment_date" name="appointment_date" type="date" value="{{ $filters['appointment_date'] ?? '' }}" class="mt-2 block w-full rounded-md border border-zinc-300 px-3 py-2"></div>
+            <div><label for="status" class="block text-sm font-medium text-zinc-700">Status</label><select id="status" name="status" class="mt-2 block w-full rounded-md border border-zinc-300 px-3 py-2"><option value="">All statuses</option>@foreach (\App\Models\Appointment::STATUSES as $status)<option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>{{ ucfirst(str_replace('_', ' ', $status)) }}</option>@endforeach</select></div>
+            <div><label for="therapist_profile_id" class="block text-sm font-medium text-zinc-700">Therapist</label><select id="therapist_profile_id" name="therapist_profile_id" class="mt-2 block w-full rounded-md border border-zinc-300 px-3 py-2"><option value="">All therapists</option>@foreach ($therapists as $therapist)<option value="{{ $therapist->id }}" @selected((string) ($filters['therapist_profile_id'] ?? '') === (string) $therapist->id)>{{ trim($therapist->first_name.' '.$therapist->last_name) }}</option>@endforeach</select></div>
+            <div><label for="customer_profile_id" class="block text-sm font-medium text-zinc-700">Customer</label><select id="customer_profile_id" name="customer_profile_id" class="mt-2 block w-full rounded-md border border-zinc-300 px-3 py-2"><option value="">All customers</option>@foreach ($customers as $customer)<option value="{{ $customer->id }}" @selected((string) ($filters['customer_profile_id'] ?? '') === (string) $customer->id)>{{ trim($customer->first_name.' '.$customer->last_name) }}</option>@endforeach</select></div>
+        </div>
+        <div class="mt-4 flex justify-end gap-3"><a href="{{ route('management.appointments.index') }}" class="rounded-md border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50">Clear</a><button type="submit" class="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">Apply filters</button></div>
+    </form>
+
     <div class="overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm">
         <table class="min-w-full divide-y divide-zinc-200 text-left text-sm">
             <thead class="bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-500">

@@ -53,6 +53,7 @@
                                 >
                                     Therapist
                                 </a>
+                                <a href="{{ route('therapist.schedule.index') }}" class="rounded-md px-3 py-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950">My schedule</a>
                             @elseif (auth()->user()->isCustomer())
                                 <a
                                     href="{{ route('customer.index') }}"
@@ -62,11 +63,14 @@
                                 </a>
                                 <a
                                     href="{{ route('customer.appointments.create') }}"
-                                    class="rounded-md px-3 py-2 transition {{ request()->routeIs('customer.appointments.*') ? 'bg-emerald-700 text-white' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950' }}"
+                                    class="rounded-md px-3 py-2 transition {{ request()->routeIs('customer.appointments.create') ? 'bg-emerald-700 text-white' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950' }}"
                                 >
                                     Book appointment
                                 </a>
+                                <a href="{{ route('customer.appointments.index') }}" class="rounded-md px-3 py-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950">My appointments</a>
                             @endif
+                            @php($unreadNotificationCount = auth()->user()->systemNotifications()->where('is_read', false)->count())
+                            <a href="{{ route('notifications.index') }}" class="rounded-md px-3 py-2 transition {{ request()->routeIs('notifications.*') ? 'bg-emerald-700 text-white' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950' }}">Notifications{{ $unreadNotificationCount ? ' ('.$unreadNotificationCount.')' : '' }}</a>
                             <span class="px-2 text-zinc-500">{{ auth()->user()->name }}</span>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf

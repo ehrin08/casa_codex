@@ -2,25 +2,11 @@
 
 @section('title', 'Therapist | Casa Paraiso Spa Management System')
 @section('page_title', 'Therapist Area')
-@section('page_description', 'Placeholder structure for future therapist schedules, appointment assignments, and commission summaries.')
+@section('page_description', 'Review your assigned Casa Paraiso appointments and upcoming work schedule.')
 
 @section('content')
-    @php
-        $sections = [
-            ['title' => 'My Schedule', 'description' => 'View assigned work dates and availability windows.'],
-            ['title' => 'Assigned Appointments', 'description' => 'Review upcoming and completed appointment assignments.'],
-            ['title' => 'Commission Summary', 'description' => 'Track future commission totals and payment status.'],
-            ['title' => 'Customer Notes', 'description' => 'Prepare space for relevant service notes and customer preferences.'],
-        ];
-    @endphp
-
     <div class="grid gap-4 md:grid-cols-2">
-        @foreach ($sections as $section)
-            <article class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
-                <h2 class="text-lg font-semibold text-zinc-950">{{ $section['title'] }}</h2>
-                <p class="mt-2 text-sm leading-6 text-zinc-600">{{ $section['description'] }}</p>
-                <p class="mt-4 text-xs font-semibold uppercase tracking-wide text-zinc-400">Coming later</p>
-            </article>
-        @endforeach
+        <a href="{{ route('therapist.schedule.index') }}" class="rounded-lg border border-emerald-200 bg-white p-5 shadow-sm transition hover:border-emerald-600 hover:shadow-md"><h2 class="text-lg font-semibold text-zinc-950">My Schedule</h2><p class="mt-2 text-sm leading-6 text-zinc-600">View today's customers and upcoming assigned appointments.</p><p class="mt-4 text-xs font-semibold uppercase tracking-wide text-emerald-700">View schedule</p></a>
+        <a href="{{ route('notifications.index') }}" class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-600 hover:shadow-md"><h2 class="text-lg font-semibold text-zinc-950">Notifications</h2><p class="mt-2 text-sm leading-6 text-zinc-600">Review new assignments and appointment status changes.</p><p class="mt-4 text-xs font-semibold uppercase tracking-wide text-emerald-700">View notifications</p></a>
     </div>
 @endsection
