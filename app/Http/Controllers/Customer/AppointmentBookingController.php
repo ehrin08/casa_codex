@@ -8,7 +8,7 @@ use App\Models\Appointment;
 use App\Models\CustomerProfile;
 use App\Models\Service;
 use App\Models\TherapistProfile;
-use Carbon\Carbon;
+use App\Services\AppointmentScheduler;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -33,33 +33,20 @@ class AppointmentBookingController extends Controller
         ]);
     }
 
-    public function store(StoreAppointmentRequest $request): RedirectResponse
-    {
+    public function store(
+        StoreAppointmentRequest $request,
+        AppointmentScheduler $scheduler,
+    ): RedirectResponse {
         $validated = $request->validated();
         $customerProfile = $this->activeCustomerProfile($request);
-        $service = Service::query()
-            ->where('status', 'active')
-            ->findOrFail($validated['service_id']);
-        $therapist = TherapistProfile::query()
-            ->where('status', 'active')
-            ->findOrFail($validated['therapist_profile_id']);
-
-        $startTime = Carbon::createFromFormat('H:i', $validated['appointment_time']);
-        $endTime = $startTime->copy()->addMinutes($service->duration_minutes);
-
-        $appointment = Appointment::create([
-            'customer_profile_id' => $customerProfile->id,
-            'therapist_profile_id' => $therapist->id,
-            'service_id' => $service->id,
-            'appointment_date' => $validated['appointment_date'],
-            'start_time' => $startTime->format('H:i:s'),
-            'end_time' => $endTime->format('H:i:s'),
-            'status' => 'pending',
-            'service_name_snapshot' => $service->name,
-            'service_duration_minutes_snapshot' => $service->duration_minutes,
-            'service_price_snapshot' => $service->price,
-            'notes' => $validated['notes'] ?? null,
-        ]);
+        $appointment = $scheduler->schedule(
+            $customerProfile,
+            $validated['service_id'],
+            $validated['therapist_profile_id'],
+            $validated['appointment_date'],
+            $validated['appointment_time'],
+            $validated['notes'] ?? null,
+        );
 
         return redirect()
             ->route('customer.appointments.show', $appointment)

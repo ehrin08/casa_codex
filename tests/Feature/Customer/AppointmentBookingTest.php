@@ -6,6 +6,7 @@ use App\Models\Appointment;
 use App\Models\CustomerProfile;
 use App\Models\Role;
 use App\Models\Service;
+use App\Models\TherapistAvailability;
 use App\Models\TherapistProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -59,6 +60,13 @@ class AppointmentBookingTest extends TestCase
         $service = $this->createService('Ventosa Massage', duration: 75, price: 950);
         $therapist = $this->createTherapist('Maya', 'Santos');
         $appointmentDate = now()->addDay()->toDateString();
+        TherapistAvailability::create([
+            'therapist_profile_id' => $therapist->id,
+            'availability_date' => $appointmentDate,
+            'start_time' => '09:00',
+            'end_time' => '17:00',
+            'status' => 'active',
+        ]);
 
         $response = $this->actingAs($customer)->post(route('customer.appointments.store'), [
             'service_id' => $service->id,

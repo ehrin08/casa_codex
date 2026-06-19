@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Customer\AppointmentBookingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Management\AppointmentController;
 use App\Http\Controllers\Management\CustomerProfileController;
 use App\Http\Controllers\Management\ServiceController;
 use App\Http\Controllers\Management\TherapistAvailabilityController;
@@ -24,6 +25,13 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('management')->name('management.')->middleware('role:management')->group(function () {
         Route::view('/', 'management.index')->name('index');
+
+        Route::get('appointments', [AppointmentController::class, 'index'])
+            ->name('appointments.index');
+        Route::get('appointments/{appointment}', [AppointmentController::class, 'show'])
+            ->name('appointments.show');
+        Route::patch('appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])
+            ->name('appointments.update-status');
 
         Route::patch('services/{service}/toggle-status', [ServiceController::class, 'toggleStatus'])
             ->name('services.toggle-status');

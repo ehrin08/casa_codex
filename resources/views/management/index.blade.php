@@ -2,11 +2,12 @@
 
 @section('title', 'Management | Casa Paraiso Spa Management System')
 @section('page_title', 'Management Area')
-@section('page_description', 'Manage Casa Paraiso services, therapist and customer profiles, and therapist availability.')
+@section('page_description', 'Manage Casa Paraiso appointments, services, profiles, and therapist availability.')
 
 @section('content')
     @php
         $sections = [
+            ['title' => 'Appointments', 'description' => 'Review bookings and maintain appointment status history.', 'route' => 'management.appointments.index'],
             ['title' => 'Services', 'description' => 'Maintain spa services, durations, prices, categories, and status.', 'route' => 'management.services.index'],
             ['title' => 'Therapists', 'description' => 'Manage therapist profiles, account links, specialties, and staff status.', 'route' => 'management.therapists.index'],
             ['title' => 'Customers', 'description' => 'Maintain registered and walk-in customer profile details.', 'route' => 'management.customers.index'],

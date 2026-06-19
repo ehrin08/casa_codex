@@ -1,4 +1,4 @@
-# Sprint 3 - Customer Appointment Booking
+# Sprint 3 - Appointment Booking and Scheduling
 
 ## CPSMS-37 Scope
 
@@ -16,6 +16,22 @@ On creation, the appointment is linked to the authenticated user's active custom
 - Management and therapist users receive a forbidden response.
 - Customers without an active linked profile cannot use the booking flow.
 
+## CPSMS-38 Scheduling Rules
+
+Appointment creation runs through `App\Services\AppointmentScheduler`. The selected service duration determines the end time. The scheduler locks the active therapist record inside the booking transaction, then validates availability and appointment conflicts before inserting the pending appointment.
+
+An appointment must fit completely inside at least one active availability record for the selected therapist. A matching record can use the exact `availability_date` or a recurring `day_of_week`. Inactive availability and ranges that end outside the window are rejected. Overnight appointments are not supported by the current same-day availability schema.
+
+Time ranges use the half-open overlap rule `new_start < existing_end AND new_end > existing_start`. Partial overlaps, exact matches, and new appointments that contain an existing appointment are rejected. Appointments that touch only at an endpoint are allowed. `pending`, `confirmed`, and `completed` appointments block a slot; `cancelled` and `no_show` appointments are ignored.
+
+## Status Tracking
+
+Management users can view appointment lists and details under `/management/appointments`. Allowed statuses are `pending`, `confirmed`, `completed`, `cancelled`, and `no_show`.
+
+Each actual status change creates an `appointment_status_histories` record containing the appointment, previous and new status, authenticated management user, optional notes, and timestamp. The appointment row is locked during updates, and submitting an unchanged status does not create history.
+
+Customer booking routes remain customer-only. Management appointment routes use the existing `auth` and `role:management` middleware; customers, therapists, and guests cannot update status.
+
 ## Deferred Work
 
-Therapist availability matching, overlapping appointment prevention, appointment status management, payment creation, and staff scheduling remain outside CPSMS-37. These belong to CPSMS-38 and later tasks.
+Full therapist schedule views, notifications, payments, transactions, commissions, and later analytics remain outside CPSMS-38.

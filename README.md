@@ -2,7 +2,7 @@
 
 Casa Paraiso Spa Management System is a web-based service management and appointment booking system for Casa Paraiso - Body and Wellness Spa.
 
-This repository contains the Sprint 1 foundation, Sprint 2 authentication and management modules, and the Sprint 3 customer appointment booking flow. Later tasks will add schedule conflict handling, appointment management, transactions, promotions, analytics, reports, reviews, and notifications.
+This repository contains the Sprint 1 foundation, Sprint 2 authentication and management modules, and the Sprint 3 customer booking, scheduling, and appointment status workflow. Later tasks will add therapist schedule views, notifications, transactions, promotions, analytics, reports, and reviews.
 
 ## Tech Stack
 
@@ -107,6 +107,7 @@ Laravel's `web` middleware provides cookie-backed sessions and CSRF protection. 
 | Protected route | Required role |
 | --- | --- |
 | `/management` | Management |
+| `/management/appointments` | Management |
 | `/therapist` | Therapist |
 | `/customer` | Customer |
 | `/customer/book-appointment` | Customer |
@@ -127,10 +128,11 @@ These are fake local development accounts. Do not use the shared test password i
 
 ## Management Modules
 
-Management users can maintain four core record types from `/management`:
+Management users can maintain appointment status and four core record types from `/management`:
 
 | Module | Base route | Supported actions |
 | --- | --- | --- |
+| Appointments | `/management/appointments` | List, view, update status, inspect status history |
 | Services | `/management/services` | List, create, edit, deactivate, reactivate |
 | Therapist profiles | `/management/therapists` | List, create, edit, deactivate, reactivate |
 | Customer profiles | `/management/customers` | List, create, edit, deactivate, reactivate |
@@ -146,6 +148,9 @@ Records are not deleted by these modules. Existing `status` or `is_active` field
 - `/login` - guest login page
 - `/dashboard` - authenticated role redirect
 - `/management` - management-only module hub
+- `/management/appointments` - management appointment list
+- `/management/appointments/{appointment}` - appointment detail and status history
+- `PATCH /management/appointments/{appointment}/status` - management-only status update
 - `/management/services` - management service records
 - `/management/therapists` - management therapist profiles
 - `/management/customers` - management customer profiles
@@ -158,9 +163,21 @@ Records are not deleted by these modules. Existing `status` or `is_active` field
 
 ## Customer Appointment Booking
 
-Authenticated customers can book an appointment from `/customer/book-appointment`. The form lists active services and active therapists and accepts an appointment date, start time, and optional notes. Dates in the past, inactive records, and invalid input are rejected.
+Authenticated customers can book an appointment from `/customer/book-appointment`. The form lists active services and active therapists and accepts an appointment date, start time, and optional notes. Dates in the past, inactive records, unavailable times, overlapping bookings, and invalid input are rejected.
 
-The booking controller links the authenticated user's active customer profile, selected service, and selected therapist. It calculates the end time from the service duration and stores the service name, duration, and price as snapshots with a default `pending` status. No transaction or payment record is created. Therapist availability and schedule conflict checks are intentionally deferred to CPSMS-38.
+The scheduler links the authenticated user's active customer profile, selected service, and selected therapist. It calculates the end time from the service duration and stores the service name, duration, and price as snapshots with a default `pending` status. No transaction or payment record is created.
+
+### Scheduling Rules
+
+The full appointment range must fit inside an active therapist availability window. Availability may target the exact appointment date or recur by weekday. Inactive availability does not permit booking, and appointments cannot span beyond the availability end time or cross midnight.
+
+Bookings use half-open time ranges: an overlap exists when the new start is before an existing end and the new end is after an existing start. This rejects partial, containing, and exact overlaps while allowing adjacent appointments. Existing `pending`, `confirmed`, and `completed` appointments block the slot; `cancelled` and `no_show` appointments do not.
+
+Bookings lock the selected therapist while availability and conflicts are checked and the appointment is inserted. This serializes concurrent booking attempts for the same therapist.
+
+### Appointment Status Tracking
+
+Management users can set an appointment to `pending`, `confirmed`, `completed`, `cancelled`, or `no_show`. Each actual status change records the previous status, new status, management user, optional notes, and change time in `appointment_status_histories`. Submitting the current status again does not create duplicate history. Customers, therapists, and guests cannot access the management status workflow.
 
 ## Database Structure
 

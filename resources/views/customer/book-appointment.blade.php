@@ -80,7 +80,7 @@
             </div>
 
             <p class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-                Availability and schedule conflict checks will be confirmed in the next scheduling step. Submitting this form does not create a payment.
+                Your request must fit the therapist's active availability and must not overlap another active appointment. Submitting this form does not create a payment.
             </p>
         </aside>
     </div>

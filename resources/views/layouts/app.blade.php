@@ -41,6 +41,7 @@
                                 >
                                     Management
                                 </a>
+                                <a href="{{ route('management.appointments.index') }}" class="rounded-md px-3 py-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950">Appointments</a>
                                 <a href="{{ route('management.services.index') }}" class="rounded-md px-3 py-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950">Services</a>
                                 <a href="{{ route('management.therapists.index') }}" class="rounded-md px-3 py-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950">Therapists</a>
                                 <a href="{{ route('management.customers.index') }}" class="rounded-md px-3 py-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950">Customers</a>
