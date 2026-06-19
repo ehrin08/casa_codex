@@ -55,9 +55,15 @@
                             @elseif (auth()->user()->isCustomer())
                                 <a
                                     href="{{ route('customer.index') }}"
-                                    class="rounded-md px-3 py-2 transition {{ request()->routeIs('customer.*') ? 'bg-emerald-700 text-white' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950' }}"
+                                    class="rounded-md px-3 py-2 transition {{ request()->routeIs('customer.index') ? 'bg-emerald-700 text-white' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950' }}"
                                 >
                                     Customer
+                                </a>
+                                <a
+                                    href="{{ route('customer.appointments.create') }}"
+                                    class="rounded-md px-3 py-2 transition {{ request()->routeIs('customer.appointments.*') ? 'bg-emerald-700 text-white' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950' }}"
+                                >
+                                    Book appointment
                                 </a>
                             @endif
                             <span class="px-2 text-zinc-500">{{ auth()->user()->name }}</span>

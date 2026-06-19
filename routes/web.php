@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Customer\AppointmentBookingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Management\CustomerProfileController;
 use App\Http\Controllers\Management\ServiceController;
@@ -44,7 +45,13 @@ Route::middleware('auth')->group(function () {
     Route::view('/therapist', 'therapist.index')
         ->middleware('role:therapist')
         ->name('therapist.index');
-    Route::view('/customer', 'customer.index')
-        ->middleware('role:customer')
-        ->name('customer.index');
+    Route::prefix('customer')->name('customer.')->middleware('role:customer')->group(function () {
+        Route::view('/', 'customer.index')->name('index');
+        Route::get('book-appointment', [AppointmentBookingController::class, 'create'])
+            ->name('appointments.create');
+        Route::post('book-appointment', [AppointmentBookingController::class, 'store'])
+            ->name('appointments.store');
+        Route::get('appointments/{appointment}', [AppointmentBookingController::class, 'show'])
+            ->name('appointments.show');
+    });
 });

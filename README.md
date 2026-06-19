@@ -2,7 +2,7 @@
 
 Casa Paraiso Spa Management System is a web-based service management and appointment booking system for Casa Paraiso - Body and Wellness Spa.
 
-This repository contains the Sprint 1 foundation plus Sprint 2 authentication, role-based access control, and core management CRUD modules. Business modules such as dashboards, booking, transactions, promotions, analytics, reports, reviews, and notifications will be added in later tasks.
+This repository contains the Sprint 1 foundation, Sprint 2 authentication and management modules, and the Sprint 3 customer appointment booking flow. Later tasks will add schedule conflict handling, appointment management, transactions, promotions, analytics, reports, reviews, and notifications.
 
 ## Tech Stack
 
@@ -109,6 +109,7 @@ Laravel's `web` middleware provides cookie-backed sessions and CSRF protection. 
 | `/management` | Management |
 | `/therapist` | Therapist |
 | `/customer` | Customer |
+| `/customer/book-appointment` | Customer |
 
 Guests are redirected to `/login`. After login, `/dashboard` sends each user to their assigned role area. Authenticated navigation displays only that role area's link and the logout action. See `docs/rbac.md` for the implementation structure.
 
@@ -150,7 +151,16 @@ Records are not deleted by these modules. Existing `status` or `is_active` field
 - `/management/customers` - management customer profiles
 - `/management/availability` - management therapist availability
 - `/therapist` - therapist-only area placeholder
-- `/customer` - customer-only area placeholder
+- `/customer` - customer-only area
+- `GET /customer/book-appointment` - customer-only appointment booking form
+- `POST /customer/book-appointment` - validate and create a pending customer appointment
+- `GET /customer/appointments/{appointment}` - customer-owned appointment confirmation
+
+## Customer Appointment Booking
+
+Authenticated customers can book an appointment from `/customer/book-appointment`. The form lists active services and active therapists and accepts an appointment date, start time, and optional notes. Dates in the past, inactive records, and invalid input are rejected.
+
+The booking controller links the authenticated user's active customer profile, selected service, and selected therapist. It calculates the end time from the service duration and stores the service name, duration, and price as snapshots with a default `pending` status. No transaction or payment record is created. Therapist availability and schedule conflict checks are intentionally deferred to CPSMS-38.
 
 ## Database Structure
 
