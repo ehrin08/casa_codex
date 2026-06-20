@@ -89,6 +89,26 @@ class RoleAccessTest extends TestCase
             'customer' => route('customer.index'),
         ];
 
+        $roleNavigation = [
+            'management' => [
+                'management.services.index',
+                'management.therapists.index',
+                'management.customers.index',
+                'management.availability.index',
+                'management.appointments.index',
+                'management.transactions.index',
+                'management.commissions.index',
+            ],
+            'therapist' => [
+                'therapist.schedule.index',
+                'therapist.commissions.index',
+            ],
+            'customer' => [
+                'customer.appointments.create',
+                'customer.appointments.index',
+            ],
+        ];
+
         foreach ($routes as $role => $visibleRoute) {
             $user = $this->createUserWithRole($role);
             $response = $this->actingAs($user)->get($visibleRoute);
@@ -96,7 +116,14 @@ class RoleAccessTest extends TestCase
             $response
                 ->assertOk()
                 ->assertSee('action="'.route('logout').'"', false)
+                ->assertSee('aria-label="Account navigation"', false)
+                ->assertSee('id="mobile-account-navigation"', false)
+                ->assertSee('href="'.route('notifications.index').'"', false)
                 ->assertDontSee('href="'.route('login').'"', false);
+
+            foreach ($roleNavigation[$role] as $navigationRoute) {
+                $response->assertSee('href="'.route($navigationRoute).'"', false);
+            }
 
             foreach ($routes as $candidateRole => $candidateRoute) {
                 if ($candidateRole === $role) {
