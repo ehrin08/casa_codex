@@ -10,6 +10,7 @@
             ['My Schedule', 'View today\'s guests and all upcoming assigned appointments.', 'therapist.schedule.index', 'Open schedule'],
             ['Notifications', 'Review new assignments and appointment status updates.', 'notifications.index', 'View updates'],
             ['Upcoming Appointments', 'Look ahead and prepare for each guest\'s selected service.', 'therapist.schedule.index', 'View upcoming'],
+            ['My Commissions', 'Review pending, paid, and void commission records from completed services.', 'therapist.commissions.index', 'View commissions'],
         ] as $section)
             <a href="{{ route($section[2]) }}" class="spa-panel group p-6 transition hover:-translate-y-0.5 hover:border-sage-200 hover:shadow-lg">
                 <div class="flex size-11 items-center justify-center rounded-full bg-sage-100 text-sage-700" aria-hidden="true">
@@ -20,10 +21,5 @@
                 <p class="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-sage-700">{{ $section[3] }} <span aria-hidden="true">&rarr;</span></p>
             </a>
         @endforeach
-        <div class="rounded-2xl border border-dashed border-cream-300 bg-cream-50/60 p-6">
-            <span class="inline-flex rounded-full bg-gold-100 px-2.5 py-1 text-xs font-bold text-gold-600">Coming soon</span>
-            <h2 class="mt-5 text-lg font-semibold text-cocoa-800">Future Commission Summary</h2>
-            <p class="mt-2 text-sm leading-6 text-cocoa-500">Commission totals will become available with transaction recording.</p>
-        </div>
     </div>
 @endsection

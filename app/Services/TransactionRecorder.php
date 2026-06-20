@@ -11,6 +11,10 @@ use Illuminate\Validation\ValidationException;
 
 class TransactionRecorder
 {
+    public function __construct(
+        private readonly TherapistCommissionRecorder $commissionRecorder,
+    ) {}
+
     /**
      * @param  array<string, mixed>  $data
      */
@@ -66,7 +70,7 @@ class TransactionRecorder
                 ]);
             }
 
-            return Transaction::create([
+            $transaction = Transaction::create([
                 'appointment_id' => $appointment->id,
                 'customer_profile_id' => $appointment->customer_profile_id,
                 'cashier_user_id' => $cashier->id,
@@ -80,6 +84,12 @@ class TransactionRecorder
                 'transaction_date' => $data['transaction_date'],
                 'notes' => $data['notes'] ?? null,
             ]);
+
+            if ($isPaid) {
+                $this->commissionRecorder->recordFor($transaction);
+            }
+
+            return $transaction;
         });
     }
 

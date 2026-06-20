@@ -7,6 +7,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TherapistCommission extends Model
 {
+    public const STATUS_PENDING = 'pending';
+
+    public const STATUS_PAID = 'paid';
+
+    public const STATUS_VOID = 'void';
+
+    public const STATUSES = [
+        self::STATUS_PENDING,
+        self::STATUS_PAID,
+        self::STATUS_VOID,
+    ];
+
+    public const TERMINAL_STATUSES = [
+        self::STATUS_PAID,
+        self::STATUS_VOID,
+    ];
+
     protected $fillable = [
         'therapist_profile_id',
         'transaction_id',

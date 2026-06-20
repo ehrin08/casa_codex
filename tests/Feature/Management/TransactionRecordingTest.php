@@ -6,6 +6,7 @@ use App\Models\Appointment;
 use App\Models\CustomerProfile;
 use App\Models\Role;
 use App\Models\Service;
+use App\Models\TherapistCommission;
 use App\Models\TherapistProfile;
 use App\Models\Transaction;
 use App\Models\User;
@@ -104,7 +105,12 @@ class TransactionRecordingTest extends TestCase
         $this->assertSame('200.00', $transaction->change_due);
         $this->assertSame(Transaction::PAYMENT_METHOD_CASH, $transaction->payment_method);
         $this->assertSame(Transaction::STATUS_PAID, $transaction->payment_status);
-        $this->assertDatabaseCount('therapist_commissions', 0);
+        $commission = TherapistCommission::sole();
+        $this->assertSame($appointment->therapist_profile_id, $commission->therapist_profile_id);
+        $this->assertSame($transaction->id, $commission->transaction_id);
+        $this->assertSame('20.00', $commission->commission_rate);
+        $this->assertSame('170.00', $commission->commission_amount);
+        $this->assertSame(TherapistCommission::STATUS_PENDING, $commission->status);
     }
 
     public function test_transaction_uses_related_service_price_when_snapshot_is_missing(): void
@@ -131,6 +137,7 @@ class TransactionRecordingTest extends TestCase
         $this->assertSame('700.50', $transaction->total_amount);
         $this->assertNull($transaction->amount_tendered);
         $this->assertNull($transaction->change_due);
+        $this->assertDatabaseCount('therapist_commissions', 0);
     }
 
     public function test_non_completed_appointments_cannot_have_transactions(): void

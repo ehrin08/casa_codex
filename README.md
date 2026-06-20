@@ -2,7 +2,7 @@
 
 Casa Paraiso Spa Management System is a web-based service management and appointment booking system for Casa Paraiso - Body and Wellness Spa.
 
-This repository contains the Sprint 1 foundation, Sprint 2 authentication and management modules, the Sprint 3 appointment workflow, and the Sprint 4 management-side cash transaction recording workflow. Later tasks will add commissions, promotions, analytics, reports, and reviews.
+This repository contains the Sprint 1 foundation, Sprint 2 authentication and management modules, the Sprint 3 appointment workflow, and the Sprint 4 cash transaction and therapist commission workflows. Later tasks will add promotions, analytics, reports, and reviews.
 
 ## UI Branding and Design
 
@@ -147,6 +147,7 @@ Management users can maintain appointment status and four core record types from
 | Customer profiles | `/management/customers` | List, create, edit, deactivate, reactivate |
 | Therapist availability | `/management/availability` | List, create, edit, deactivate, reactivate |
 | Cash transactions | `/management/transactions` | List, select completed appointment, record cash payment, view receipt |
+| Therapist commissions | `/management/commissions` | List, view calculation snapshot, mark pending commission paid or void |
 
 These controller-based modules use dedicated Form Requests for validation. Therapist and customer profiles may link only to an unused user account with the matching role. Customer profiles may also remain unlinked for walk-in records. Availability records use either a recurring weekday or a specific date and require an end time later than the start time.
 
@@ -169,9 +170,14 @@ Records are not deleted by these modules. Existing `status` or `is_active` field
 - `GET /management/transactions/create` - select an eligible completed appointment and enter payment details
 - `POST /management/transactions` - validate and record a cash transaction
 - `GET /management/transactions/{transaction}` - receipt-style transaction detail
+- `GET /management/commissions` - management commission list
+- `GET /management/commissions/{commission}` - management commission detail and calculation snapshot
+- `PATCH /management/commissions/{commission}/status` - mark a pending commission paid or void
 - `/therapist` - therapist-only area
 - `/therapist/schedule` - assigned appointments for today and upcoming dates
 - `/therapist/appointments/{appointment}` - therapist-owned appointment detail
+- `/therapist/commissions` - therapist-owned commission list
+- `/therapist/commissions/{commission}` - therapist-owned commission detail
 - `/customer` - customer-only area
 - `GET /customer/appointments` - customer-owned upcoming and past appointment list
 - `GET /customer/book-appointment` - customer-only appointment booking form
@@ -214,7 +220,15 @@ Management users can record one over-the-counter cash transaction for each compl
 
 The transaction subtotal uses the appointment's stored service price snapshot. If that snapshot is unavailable, the related service price is used. Management may enter a discount between zero and the subtotal; the server computes the final total as subtotal minus discount. Paid cash transactions require enough cash tendered to cover the total and automatically calculate change. Pending and void statuses do not store tendered cash or change.
 
-Appointment eligibility, duplicate prevention, and all monetary calculations are rechecked inside a database transaction that locks the appointment row. Recording a cash transaction does not create therapist commission records; commission computation remains part of CPSMS-41. No online payment provider or external gateway is involved. See `docs/sprint-4-transactions.md` for implementation details.
+Appointment eligibility, duplicate prevention, and all monetary calculations are rechecked inside a database transaction that locks the appointment row. A paid transaction now creates its qualifying therapist commission inside the same atomic operation. No online payment provider or external gateway is involved. See `docs/sprint-4-transactions.md` for transaction details.
+
+## Therapist Commissions
+
+Recording a paid cash transaction for a completed appointment with an assigned therapist automatically creates one pending commission. Pending and void transactions do not create commissions. The commission stores the therapist, transaction, appointment, percentage rate snapshot, calculated amount, and status.
+
+Commission uses the transaction subtotal before discount as its basis. Therapist profile rates are stored as percentages, so the server calculates `subtotal x rate / 100` in integer cents and rounds to the nearest cent. The linked transaction retains the immutable subtotal basis; the commission record snapshots the rate and result.
+
+Management can view all commissions and move a pending record to either paid or void. Marking paid sets `paid_at`. Paid and void records are terminal and cannot return to pending. Therapists can view pending, paid, and void records linked only to their own therapist profile. See `docs/sprint-4-commissions.md` for computation, status, security, and test details.
 
 ## Database Structure
 
