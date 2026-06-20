@@ -104,7 +104,7 @@ class TransactionRecordingTest extends TestCase
         $this->assertSame('200.00', $transaction->change_due);
         $this->assertSame(Transaction::PAYMENT_METHOD_CASH, $transaction->payment_method);
         $this->assertSame(Transaction::STATUS_PAID, $transaction->payment_status);
-        $this->assertDatabaseCount('therapist_commissions', 0);
+        $this->assertDatabaseCount('therapist_commissions', 1);
     }
 
     public function test_transaction_uses_related_service_price_when_snapshot_is_missing(): void

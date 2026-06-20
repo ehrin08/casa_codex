@@ -147,6 +147,7 @@ Management users can maintain appointment status and four core record types from
 | Customer profiles | `/management/customers` | List, create, edit, deactivate, reactivate |
 | Therapist availability | `/management/availability` | List, create, edit, deactivate, reactivate |
 | Cash transactions | `/management/transactions` | List, select completed appointment, record cash payment, view receipt |
+| Therapist commissions | `/management/commissions` | Filter, inspect calculation snapshots, mark pending commissions paid |
 
 These controller-based modules use dedicated Form Requests for validation. Therapist and customer profiles may link only to an unused user account with the matching role. Customer profiles may also remain unlinked for walk-in records. Availability records use either a recurring weekday or a specific date and require an end time later than the start time.
 
@@ -169,9 +170,14 @@ Records are not deleted by these modules. Existing `status` or `is_active` field
 - `GET /management/transactions/create` - select an eligible completed appointment and enter payment details
 - `POST /management/transactions` - validate and record a cash transaction
 - `GET /management/transactions/{transaction}` - receipt-style transaction detail
+- `GET /management/commissions` - management commission monitoring and filters
+- `GET /management/commissions/{commission}` - management commission detail
+- `PATCH /management/commissions/{commission}/mark-paid` - settle a pending commission
 - `/therapist` - therapist-only area
 - `/therapist/schedule` - assigned appointments for today and upcoming dates
 - `/therapist/appointments/{appointment}` - therapist-owned appointment detail
+- `GET /therapist/commissions` - authenticated therapist's commission records
+- `GET /therapist/commissions/{commission}` - therapist-owned commission detail
 - `/customer` - customer-only area
 - `GET /customer/appointments` - customer-owned upcoming and past appointment list
 - `GET /customer/book-appointment` - customer-only appointment booking form
@@ -214,7 +220,15 @@ Management users can record one over-the-counter cash transaction for each compl
 
 The transaction subtotal uses the appointment's stored service price snapshot. If that snapshot is unavailable, the related service price is used. Management may enter a discount between zero and the subtotal; the server computes the final total as subtotal minus discount. Paid cash transactions require enough cash tendered to cover the total and automatically calculate change. Pending and void statuses do not store tendered cash or change.
 
-Appointment eligibility, duplicate prevention, and all monetary calculations are rechecked inside a database transaction that locks the appointment row. Recording a cash transaction does not create therapist commission records; commission computation remains part of CPSMS-41. No online payment provider or external gateway is involved. See `docs/sprint-4-transactions.md` for implementation details.
+Appointment eligibility, duplicate prevention, and all monetary calculations are rechecked inside a database transaction that locks the appointment row. A paid cash transaction now synchronously creates its qualifying therapist commission. No online payment provider or external gateway is involved. See `docs/sprint-4-transactions.md` for transaction details.
+
+## Therapist Commission Workflow
+
+Paid cash transactions for completed appointments with an assigned therapist create one pending commission automatically. The calculation uses the transaction subtotal before discount as the base and captures the therapist profile's percentage rate as an immutable snapshot. Amounts are rounded to the nearest cent using `commission = subtotal x rate / 100`.
+
+Initially pending or void transactions do not create a payable commission. If an unpaid commission exists and its transaction becomes pending or void, the commission becomes void. Returning that transaction to paid reactivates the same record and keeps its original rate snapshot. Pending commissions follow transaction subtotal changes, while commissions already marked paid remain unchanged for audit stability.
+
+Management can filter all commission records by therapist, status, and transaction date, inspect calculation details, and mark only pending commissions paid. Therapists have read-only access to records belonging to their linked user/profile. Customers receive `403 Forbidden`, and guests are redirected to login. A database unique constraint on `transaction_id` prevents duplicate commission records. See [`docs/sprint-4-commissions.md`](docs/sprint-4-commissions.md) for details.
 
 ## Database Structure
 

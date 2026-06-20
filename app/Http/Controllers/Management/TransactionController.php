@@ -72,6 +72,7 @@ class TransactionController extends Controller
             'appointment.therapistProfile',
             'appointment.service',
             'cashier',
+            'therapistCommission',
         ]);
 
         return view('management.transactions.show', compact('transaction'));

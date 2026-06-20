@@ -9,6 +9,7 @@
         $sections = [
             ['title' => 'Appointments', 'description' => 'Review bookings and maintain status history.', 'route' => 'management.appointments.index', 'label' => 'Manage bookings'],
             ['title' => 'Transactions', 'description' => 'Record cash payments and review receipt-style transaction details.', 'route' => 'management.transactions.index', 'label' => 'Manage cash sales'],
+            ['title' => 'Commissions', 'description' => 'Monitor therapist commission calculations and settle pending records.', 'route' => 'management.commissions.index', 'label' => 'Review commissions'],
             ['title' => 'Services', 'description' => 'Maintain treatments, durations, prices, and categories.', 'route' => 'management.services.index', 'label' => 'Manage services'],
             ['title' => 'Therapists', 'description' => 'Manage therapist profiles, specialties, and staff status.', 'route' => 'management.therapists.index', 'label' => 'Manage team'],
             ['title' => 'Customers', 'description' => 'Maintain registered and walk-in guest profiles.', 'route' => 'management.customers.index', 'label' => 'Manage guests'],

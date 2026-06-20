@@ -68,10 +68,10 @@ The receipt displays Casa Paraiso branding, receipt reference, transaction date,
 - `TransactionRecorder` independently rejects non-management callers.
 - Financial totals are always recomputed on the server.
 
-## Commission Boundary
+## Commission Integration
 
-CPSMS-40 does not create or update `therapist_commissions`. The transaction feature tests assert that successful cash recording leaves that table empty. Commission computation will be implemented separately in CPSMS-41.
+CPSMS-40 remains responsible for cash recording. CPSMS-41 observes a successfully saved transaction and synchronizes its commission without changing the transaction form, validation, totals, or receipt workflow. Paid qualifying transactions create a pending commission; pending and void transactions do not create a payable record. See `docs/sprint-4-commissions.md` for calculation and status details.
 
 ## Tests
 
-`tests/Feature/Management/TransactionRecordingTest.php` covers management access, guest redirects, role restrictions, completed appointment eligibility, ineligible statuses, snapshot pricing, service-price fallback, discounts, cash tender and change, payment status validation, duplicate prevention, receipt rendering, and the no-commission boundary.
+`tests/Feature/Management/TransactionRecordingTest.php` covers management access, guest redirects, role restrictions, completed appointment eligibility, ineligible statuses, snapshot pricing, service-price fallback, discounts, cash tender and change, payment status validation, duplicate prevention, receipt rendering, and paid-transaction commission integration.

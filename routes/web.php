@@ -8,9 +8,11 @@ use App\Http\Controllers\Management\AppointmentController;
 use App\Http\Controllers\Management\CustomerProfileController;
 use App\Http\Controllers\Management\ServiceController;
 use App\Http\Controllers\Management\TherapistAvailabilityController;
+use App\Http\Controllers\Management\TherapistCommissionController;
 use App\Http\Controllers\Management\TherapistProfileController;
 use App\Http\Controllers\Management\TransactionController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Therapist\CommissionController as TherapistCommissionViewController;
 use App\Http\Controllers\Therapist\ScheduleController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,6 +45,13 @@ Route::middleware('auth')->group(function () {
         Route::resource('transactions', TransactionController::class)
             ->only(['index', 'create', 'store', 'show']);
 
+        Route::get('commissions', [TherapistCommissionController::class, 'index'])
+            ->name('commissions.index');
+        Route::get('commissions/{commission}', [TherapistCommissionController::class, 'show'])
+            ->name('commissions.show');
+        Route::patch('commissions/{commission}/mark-paid', [TherapistCommissionController::class, 'markPaid'])
+            ->name('commissions.mark-paid');
+
         Route::patch('services/{service}/toggle-status', [ServiceController::class, 'toggleStatus'])
             ->name('services.toggle-status');
         Route::resource('services', ServiceController::class)->except(['show', 'destroy']);
@@ -65,6 +74,10 @@ Route::middleware('auth')->group(function () {
         Route::get('schedule', [ScheduleController::class, 'index'])->name('schedule.index');
         Route::get('appointments/{appointment}', [ScheduleController::class, 'show'])
             ->name('appointments.show');
+        Route::get('commissions', [TherapistCommissionViewController::class, 'index'])
+            ->name('commissions.index');
+        Route::get('commissions/{commission}', [TherapistCommissionViewController::class, 'show'])
+            ->name('commissions.show');
     });
     Route::prefix('customer')->name('customer.')->middleware('role:customer')->group(function () {
         Route::view('/', 'customer.index')->name('index');

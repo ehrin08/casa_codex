@@ -19,6 +19,7 @@
                         ['label' => 'Dashboard', 'route' => 'management.index', 'active' => 'management.index'],
                         ['label' => 'Appointments', 'route' => 'management.appointments.index', 'active' => 'management.appointments.*'],
                         ['label' => 'Transactions', 'route' => 'management.transactions.index', 'active' => 'management.transactions.*'],
+                        ['label' => 'Commissions', 'route' => 'management.commissions.index', 'active' => 'management.commissions.*'],
                         ['label' => 'Services', 'route' => 'management.services.index', 'active' => 'management.services.*'],
                         ['label' => 'Therapists', 'route' => 'management.therapists.index', 'active' => 'management.therapists.*'],
                         ['label' => 'Customers', 'route' => 'management.customers.index', 'active' => 'management.customers.*'],
@@ -28,6 +29,7 @@
                     $navLinks = array_merge($navLinks, [
                         ['label' => 'Dashboard', 'route' => 'therapist.index', 'active' => 'therapist.index'],
                         ['label' => 'My schedule', 'route' => 'therapist.schedule.index', 'active' => ['therapist.schedule.*', 'therapist.appointments.*']],
+                        ['label' => 'My commissions', 'route' => 'therapist.commissions.index', 'active' => 'therapist.commissions.*'],
                     ]);
                 } elseif (auth()->user()->isCustomer()) {
                     $navLinks = array_merge($navLinks, [

@@ -11,7 +11,7 @@
         $therapist = $appointment?->therapistProfile;
     @endphp
     <div class="mx-auto max-w-3xl">
-        <div class="mb-6 flex flex-wrap items-center justify-between gap-3"><a href="{{ route('management.transactions.index') }}" class="spa-back-link"><span aria-hidden="true">&larr;</span> Back to transactions</a>@if ($appointment)<x-button :href="route('management.appointments.show', $appointment)" variant="secondary">View appointment</x-button>@endif</div>
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-3"><a href="{{ route('management.transactions.index') }}" class="spa-back-link"><span aria-hidden="true">&larr;</span> Back to transactions</a><div class="flex flex-wrap gap-3">@if ($transaction->therapistCommission)<x-button :href="route('management.commissions.show', $transaction->therapistCommission)" variant="secondary">View commission</x-button>@endif @if ($appointment)<x-button :href="route('management.appointments.show', $appointment)" variant="secondary">View appointment</x-button>@endif</div></div>
 
         <article class="spa-panel overflow-hidden">
             <header class="relative overflow-hidden bg-cocoa-900 px-6 py-8 text-center text-cream-50 sm:px-10">

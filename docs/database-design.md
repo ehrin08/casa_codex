@@ -1,6 +1,6 @@
 # Database Design
 
-This document summarizes the initial database structure for the Casa Paraiso Spa Management System. The schema is intentionally foundational: it supports future authentication, booking, cashier, commission, promotion, analytics, review, and notification modules without implementing those workflows yet.
+This document summarizes the database structure for the Casa Paraiso Spa Management System. The schema supports the implemented authentication, booking, cashier, and commission workflows while retaining foundational tables for later promotion, analytics, and review modules.
 
 ## Core Access Tables
 
@@ -51,7 +51,9 @@ This document summarizes the initial database structure for the Casa Paraiso Spa
 
 - `therapist_commissions`
   - Stores therapist commission records derived from appointments or transactions.
-  - Includes commission rate, commission amount, status, and optional paid date.
+  - Links the transaction, appointment, therapist profile, and therapist user when available.
+  - Includes the pre-discount base amount, percentage-rate snapshot, commission amount, status, and optional paid date.
+  - A unique transaction constraint guarantees at most one commission per transaction.
 
 ## Promotion And Analytics Tables
 

@@ -86,6 +86,11 @@ class User extends Authenticatable
         return $this->hasOne(TherapistProfile::class);
     }
 
+    public function therapistCommissions(): HasMany
+    {
+        return $this->hasMany(TherapistCommission::class, 'therapist_user_id');
+    }
+
     public function systemNotifications(): HasMany
     {
         return $this->hasMany(SystemNotification::class, 'recipient_user_id');
