@@ -8,6 +8,7 @@
     @php
         $sections = [
             ['title' => 'Appointments', 'description' => 'Review bookings and maintain status history.', 'route' => 'management.appointments.index', 'label' => 'Manage bookings'],
+            ['title' => 'Transactions', 'description' => 'Record cash payments and review receipt-style transaction details.', 'route' => 'management.transactions.index', 'label' => 'Manage cash sales'],
             ['title' => 'Services', 'description' => 'Maintain treatments, durations, prices, and categories.', 'route' => 'management.services.index', 'label' => 'Manage services'],
             ['title' => 'Therapists', 'description' => 'Manage therapist profiles, specialties, and staff status.', 'route' => 'management.therapists.index', 'label' => 'Manage team'],
             ['title' => 'Customers', 'description' => 'Maintain registered and walk-in guest profiles.', 'route' => 'management.customers.index', 'label' => 'Manage guests'],
@@ -35,7 +36,7 @@
             </a>
         @endforeach
 
-        @foreach ([['Future Transactions', 'Transaction recording is planned for Sprint 4.'], ['Future Reports', 'Operational reporting will follow transaction workflows.']] as $future)
+        @foreach ([['Future Reports', 'Operational reporting will follow transaction and commission workflows.']] as $future)
             <div class="rounded-2xl border border-dashed border-cream-300 bg-cream-50/60 p-6">
                 <span class="inline-flex rounded-full bg-gold-100 px-2.5 py-1 text-xs font-bold text-gold-600">Coming soon</span>
                 <h2 class="mt-5 text-lg font-semibold text-cocoa-800">{{ $future[0] }}</h2>

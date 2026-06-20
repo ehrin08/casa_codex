@@ -9,6 +9,7 @@ use App\Http\Controllers\Management\CustomerProfileController;
 use App\Http\Controllers\Management\ServiceController;
 use App\Http\Controllers\Management\TherapistAvailabilityController;
 use App\Http\Controllers\Management\TherapistProfileController;
+use App\Http\Controllers\Management\TransactionController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Therapist\ScheduleController;
 use Illuminate\Support\Facades\Route;
@@ -38,6 +39,9 @@ Route::middleware('auth')->group(function () {
             ->name('appointments.show');
         Route::patch('appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])
             ->name('appointments.update-status');
+
+        Route::resource('transactions', TransactionController::class)
+            ->only(['index', 'create', 'store', 'show']);
 
         Route::patch('services/{service}/toggle-status', [ServiceController::class, 'toggleStatus'])
             ->name('services.toggle-status');

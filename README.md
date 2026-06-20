@@ -2,7 +2,7 @@
 
 Casa Paraiso Spa Management System is a web-based service management and appointment booking system for Casa Paraiso - Body and Wellness Spa.
 
-This repository contains the Sprint 1 foundation, Sprint 2 authentication and management modules, and the Sprint 3 appointment booking, scheduling, role-specific views, status tracking, and in-system notification workflow. Later tasks will add transactions, promotions, analytics, reports, and reviews.
+This repository contains the Sprint 1 foundation, Sprint 2 authentication and management modules, the Sprint 3 appointment workflow, and the Sprint 4 management-side cash transaction recording workflow. Later tasks will add commissions, promotions, analytics, reports, and reviews.
 
 ## UI Branding and Design
 
@@ -146,6 +146,7 @@ Management users can maintain appointment status and four core record types from
 | Therapist profiles | `/management/therapists` | List, create, edit, deactivate, reactivate |
 | Customer profiles | `/management/customers` | List, create, edit, deactivate, reactivate |
 | Therapist availability | `/management/availability` | List, create, edit, deactivate, reactivate |
+| Cash transactions | `/management/transactions` | List, select completed appointment, record cash payment, view receipt |
 
 These controller-based modules use dedicated Form Requests for validation. Therapist and customer profiles may link only to an unused user account with the matching role. Customer profiles may also remain unlinked for walk-in records. Availability records use either a recurring weekday or a specific date and require an end time later than the start time.
 
@@ -164,6 +165,10 @@ Records are not deleted by these modules. Existing `status` or `is_active` field
 - `/management/therapists` - management therapist profiles
 - `/management/customers` - management customer profiles
 - `/management/availability` - management therapist availability
+- `GET /management/transactions` - management cash transaction list
+- `GET /management/transactions/create` - select an eligible completed appointment and enter payment details
+- `POST /management/transactions` - validate and record a cash transaction
+- `GET /management/transactions/{transaction}` - receipt-style transaction detail
 - `/therapist` - therapist-only area
 - `/therapist/schedule` - assigned appointments for today and upcoming dates
 - `/therapist/appointments/{appointment}` - therapist-owned appointment detail
@@ -202,6 +207,14 @@ Management users can view every appointment and filter by date, status, therapis
 Creating a booking records an unread notification for every management user and for the assigned therapist when that profile has a linked user. An actual status change records an unread notification for the linked customer and assigned therapist. Repeating the current status creates neither history nor another notification.
 
 Notifications are synchronous database records in the existing `notifications` table. Each record stores the recipient, title, message, event type, unread state, read timestamp, and appointment reference data. Authenticated users can list and mark only their own notifications as read. Email delivery is intentionally deferred; no SMTP credentials, external delivery, queue worker, or real-time broadcasting are required.
+
+## Cash Transaction Recording
+
+Management users can record one over-the-counter cash transaction for each completed appointment. The workflow starts from the Transactions area or a completed appointment detail page. Pending, confirmed, cancelled, and no-show appointments are not eligible, and appointments with an existing transaction are excluded.
+
+The transaction subtotal uses the appointment's stored service price snapshot. If that snapshot is unavailable, the related service price is used. Management may enter a discount between zero and the subtotal; the server computes the final total as subtotal minus discount. Paid cash transactions require enough cash tendered to cover the total and automatically calculate change. Pending and void statuses do not store tendered cash or change.
+
+Appointment eligibility, duplicate prevention, and all monetary calculations are rechecked inside a database transaction that locks the appointment row. Recording a cash transaction does not create therapist commission records; commission computation remains part of CPSMS-41. No online payment provider or external gateway is involved. See `docs/sprint-4-transactions.md` for implementation details.
 
 ## Database Structure
 

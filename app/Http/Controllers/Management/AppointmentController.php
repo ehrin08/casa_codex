@@ -55,6 +55,7 @@ class AppointmentController extends Controller
             'customerProfile',
             'therapistProfile',
             'service',
+            'transaction',
             'statusHistories' => fn ($query) => $query
                 ->with('changedBy')
                 ->orderByDesc('changed_at'),

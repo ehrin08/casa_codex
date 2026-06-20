@@ -44,7 +44,25 @@
             </x-card>
         </div>
 
-        <aside class="lg:sticky lg:top-28">
+        <aside class="space-y-6 lg:sticky lg:top-28">
+            @if ($appointment->transaction)
+                <x-card>
+                    <p class="text-xs font-bold uppercase tracking-[0.16em] text-sage-700">Cash transaction</p>
+                    <h2 class="mt-1 text-lg font-semibold text-cocoa-950">Receipt recorded</h2>
+                    <p class="mt-2 text-sm leading-6 text-cocoa-500">A {{ $appointment->transaction->payment_status }} cash transaction for PHP {{ number_format((float) $appointment->transaction->total_amount, 2) }} is linked to this appointment.</p>
+                    <x-button :href="route('management.transactions.show', $appointment->transaction)" variant="secondary" class="mt-5 w-full">View receipt</x-button>
+                </x-card>
+            @elseif ($appointment->status === \App\Models\Appointment::STATUS_COMPLETED)
+                <x-card class="border-sage-200 bg-sage-50">
+                    <p class="text-xs font-bold uppercase tracking-[0.16em] text-sage-700">Ready for payment</p>
+                    <h2 class="mt-1 text-lg font-semibold text-cocoa-950">Record cash transaction</h2>
+                    <p class="mt-2 text-sm leading-6 text-cocoa-600">This completed appointment is eligible for one over-the-counter cash transaction.</p>
+                    <x-button :href="route('management.transactions.create', ['appointment_id' => $appointment->id])" class="mt-5 w-full">Record transaction</x-button>
+                </x-card>
+            @else
+                <x-alert title="Transaction not available">Set this appointment to completed before recording its cash transaction.</x-alert>
+            @endif
+
             <form method="POST" action="{{ route('management.appointments.update-status', $appointment) }}" class="spa-panel p-6">
                 @csrf
                 @method('PATCH')

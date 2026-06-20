@@ -18,6 +18,7 @@
                     $navLinks = array_merge($navLinks, [
                         ['label' => 'Dashboard', 'route' => 'management.index', 'active' => 'management.index'],
                         ['label' => 'Appointments', 'route' => 'management.appointments.index', 'active' => 'management.appointments.*'],
+                        ['label' => 'Transactions', 'route' => 'management.transactions.index', 'active' => 'management.transactions.*'],
                         ['label' => 'Services', 'route' => 'management.services.index', 'active' => 'management.services.*'],
                         ['label' => 'Therapists', 'route' => 'management.therapists.index', 'active' => 'management.therapists.*'],
                         ['label' => 'Customers', 'route' => 'management.customers.index', 'active' => 'management.customers.*'],
@@ -59,7 +60,7 @@
                         </span>
                     </a>
 
-                    <nav class="hidden items-center gap-1 lg:flex" aria-label="Primary navigation">
+                    <nav class="hidden items-center gap-1 xl:flex" aria-label="Primary navigation">
                         @foreach ($navLinks as $link)
                             @php
                                 $isActive = request()->routeIs($link['active']);
@@ -79,7 +80,7 @@
                         @guest
                             <x-button :href="route('login')" class="ml-2">Log in</x-button>
                         @else
-                            <div class="ml-2 border-l border-cream-300 pl-3">
+                            <div class="ml-2 hidden border-l border-cream-300 pl-3 2xl:block">
                                 <p class="max-w-28 truncate text-xs font-bold text-cocoa-800">{{ auth()->user()->name }}</p>
                                 <p class="text-[0.65rem] font-semibold capitalize text-cocoa-500">{{ $roleLabel }}</p>
                             </div>
@@ -90,7 +91,7 @@
                         @endguest
                     </nav>
 
-                    <details class="group relative lg:hidden">
+                    <details class="group relative xl:hidden">
                         <summary class="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-xl border border-cream-300 bg-white px-3 py-2 text-sm font-bold text-cocoa-700 [&::-webkit-details-marker]:hidden">
                             <svg viewBox="0 0 24 24" fill="none" class="size-5 group-open:hidden" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"/></svg>
                             <svg viewBox="0 0 24 24" fill="none" class="hidden size-5 group-open:block" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18" stroke-linecap="round"/></svg>

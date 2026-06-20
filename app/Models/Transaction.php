@@ -8,6 +8,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Transaction extends Model
 {
+    public const PAYMENT_METHOD_CASH = 'cash';
+
+    public const STATUS_PENDING = 'pending';
+
+    public const STATUS_PAID = 'paid';
+
+    public const STATUS_VOID = 'void';
+
+    public const PAYMENT_STATUSES = [
+        self::STATUS_PENDING,
+        self::STATUS_PAID,
+        self::STATUS_VOID,
+    ];
+
     protected $fillable = [
         'appointment_id',
         'customer_profile_id',
