@@ -1,23 +1,21 @@
 @extends('layouts.app')
 
-@section('title', 'Assigned Appointment #'.$appointment->id.' | Casa Paraiso Spa Management System')
+@section('title', 'Assigned Appointment #'.$appointment->id.' | Casa Paraiso')
 @section('page_title', 'Assigned Appointment #'.$appointment->id)
-@section('page_description', 'Review the schedule and service details for this assigned appointment.')
+@section('page_description', 'Prepare for the guest with a clear view of the schedule and selected service.')
 
 @section('content')
-    <div class="mb-6"><a href="{{ route('therapist.schedule.index') }}" class="text-sm font-medium text-zinc-600 hover:text-zinc-950">Back to my schedule</a></div>
-
-    <div class="mx-auto max-w-2xl rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
-        <div class="flex items-center justify-between gap-3 border-b border-zinc-200 pb-5">
-            <h2 class="text-lg font-semibold text-zinc-950">Appointment details</h2>
-            <span class="rounded-full bg-zinc-100 px-3 py-1 text-sm font-semibold text-zinc-700">{{ ucfirst(str_replace('_', ' ', $appointment->status)) }}</span>
-        </div>
-        <dl class="mt-6 grid gap-5 sm:grid-cols-2">
-            <div><dt class="text-sm font-medium text-zinc-500">Customer</dt><dd class="mt-1 font-semibold text-zinc-900">{{ $appointment->customerProfile ? trim($appointment->customerProfile->first_name.' '.$appointment->customerProfile->last_name) : 'Unavailable' }}</dd></div>
-            <div><dt class="text-sm font-medium text-zinc-500">Service</dt><dd class="mt-1 font-semibold text-zinc-900">{{ $appointment->service_name_snapshot }}</dd></div>
-            <div><dt class="text-sm font-medium text-zinc-500">Date</dt><dd class="mt-1 font-semibold text-zinc-900">{{ $appointment->appointment_date->format('F j, Y') }}</dd></div>
-            <div><dt class="text-sm font-medium text-zinc-500">Time</dt><dd class="mt-1 font-semibold text-zinc-900">{{ date('g:i A', strtotime($appointment->start_time)) }} to {{ date('g:i A', strtotime($appointment->end_time)) }}</dd></div>
-            @if ($appointment->notes)<div class="sm:col-span-2"><dt class="text-sm font-medium text-zinc-500">Customer notes</dt><dd class="mt-1 whitespace-pre-line text-zinc-900">{{ $appointment->notes }}</dd></div>@endif
-        </dl>
+    <div class="mx-auto max-w-3xl">
+        <div class="mb-6"><a href="{{ route('therapist.schedule.index') }}" class="spa-back-link"><span aria-hidden="true">&larr;</span> Back to my schedule</a></div>
+        <x-card>
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-cream-200 pb-5"><div><p class="text-xs font-bold uppercase tracking-[0.16em] text-sage-700">Guest preparation</p><h2 class="mt-1 text-lg font-semibold text-cocoa-950">Appointment details</h2></div><x-status-badge :status="$appointment->status" class="px-3 py-1.5" /></div>
+            <dl class="mt-7 grid gap-x-8 gap-y-6 sm:grid-cols-2">
+                <div><dt class="spa-detail-label">Customer</dt><dd class="spa-detail-value">{{ $appointment->customerProfile ? trim($appointment->customerProfile->first_name.' '.$appointment->customerProfile->last_name) : 'Unavailable' }}</dd></div>
+                <div><dt class="spa-detail-label">Service</dt><dd class="spa-detail-value">{{ $appointment->service_name_snapshot }}</dd></div>
+                <div><dt class="spa-detail-label">Date</dt><dd class="spa-detail-value">{{ $appointment->appointment_date->format('F j, Y') }}</dd></div>
+                <div><dt class="spa-detail-label">Time</dt><dd class="spa-detail-value">{{ date('g:i A', strtotime($appointment->start_time)) }} to {{ date('g:i A', strtotime($appointment->end_time)) }}</dd></div>
+                @if ($appointment->notes)<div class="sm:col-span-2"><dt class="spa-detail-label">Customer notes</dt><dd class="mt-1.5 whitespace-pre-line rounded-xl bg-cream-100 p-4 leading-6 text-cocoa-800">{{ $appointment->notes }}</dd></div>@endif
+            </dl>
+        </x-card>
     </div>
 @endsection

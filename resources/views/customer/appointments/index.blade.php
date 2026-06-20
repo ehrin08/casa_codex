@@ -1,54 +1,50 @@
 @extends('layouts.app')
 
-@section('title', 'My Appointments | Casa Paraiso Spa Management System')
+@section('title', 'My Appointments | Casa Paraiso')
 @section('page_title', 'My Appointments')
-@section('page_description', 'Review your upcoming and previous Casa Paraiso appointments.')
+@section('page_description', 'Keep upcoming visits close and revisit your previous Casa Paraiso appointments.')
 
 @section('content')
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <a href="{{ route('customer.index') }}" class="text-sm font-medium text-zinc-600 hover:text-zinc-950">Back to customer area</a>
-        <a href="{{ route('customer.appointments.create') }}" class="rounded-md bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800">Book appointment</a>
+    <div class="mb-8 flex flex-wrap items-center justify-between gap-3">
+        <a href="{{ route('customer.index') }}" class="spa-back-link"><span aria-hidden="true">&larr;</span> Customer dashboard</a>
+        <x-button :href="route('customer.appointments.create')">Book appointment</x-button>
     </div>
 
-    <div class="space-y-8">
+    <div class="space-y-10">
         <section>
-            <h2 class="text-xl font-semibold text-zinc-950">Upcoming appointments</h2>
-            <div class="mt-4 grid gap-4 md:grid-cols-2">
+            <div><p class="text-xs font-bold uppercase tracking-[0.18em] text-sage-700">Your next visits</p><h2 class="mt-2 spa-section-title">Upcoming appointments</h2></div>
+            <div class="mt-5 grid gap-5 md:grid-cols-2">
                 @forelse ($upcomingAppointments as $appointment)
-                    <article class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
-                        <div class="flex items-start justify-between gap-3">
-                            <div>
-                                <h3 class="font-semibold text-zinc-950">{{ $appointment->service_name_snapshot }}</h3>
-                                <p class="mt-1 text-sm text-zinc-600">{{ $appointment->appointment_date->format('F j, Y') }} at {{ date('g:i A', strtotime($appointment->start_time)) }}</p>
+                    <article class="spa-panel overflow-hidden">
+                        <div class="h-1.5 bg-sage-600"></div>
+                        <div class="p-5 sm:p-6">
+                            <div class="flex items-start justify-between gap-3">
+                                <div><h3 class="font-semibold text-cocoa-950">{{ $appointment->service_name_snapshot }}</h3><p class="mt-1 text-sm text-cocoa-500">{{ $appointment->appointment_date->format('F j, Y') }} at {{ date('g:i A', strtotime($appointment->start_time)) }}</p></div>
+                                <x-status-badge :status="$appointment->status" />
                             </div>
-                            <span class="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-semibold text-zinc-700">{{ ucfirst(str_replace('_', ' ', $appointment->status)) }}</span>
+                            <p class="mt-4 text-sm text-cocoa-600"><span class="font-semibold text-cocoa-800">Therapist:</span> {{ $appointment->therapistProfile ? trim($appointment->therapistProfile->first_name.' '.$appointment->therapistProfile->last_name) : 'Unavailable' }}</p>
+                            <a href="{{ route('customer.appointments.show', $appointment) }}" class="mt-5 inline-flex text-sm font-bold text-sage-700 hover:text-sage-800">View appointment <span class="ml-1" aria-hidden="true">&rarr;</span></a>
                         </div>
-                        <p class="mt-3 text-sm text-zinc-600">Therapist: {{ $appointment->therapistProfile ? trim($appointment->therapistProfile->first_name.' '.$appointment->therapistProfile->last_name) : 'Unavailable' }}</p>
-                        <a href="{{ route('customer.appointments.show', $appointment) }}" class="mt-4 inline-flex text-sm font-semibold text-emerald-700 hover:text-emerald-800">View details</a>
                     </article>
                 @empty
-                    <p class="rounded-lg border border-zinc-200 bg-white p-6 text-sm text-zinc-500 md:col-span-2">You have no upcoming appointments.</p>
+                    <x-empty-state title="No upcoming appointments" description="When you are ready for your next moment of calm, choose a service and preferred time." class="md:col-span-2">
+                        <x-slot:action><x-button :href="route('customer.appointments.create')">Book your first visit</x-button></x-slot:action>
+                    </x-empty-state>
                 @endforelse
             </div>
             <div class="mt-5">{{ $upcomingAppointments->links() }}</div>
         </section>
 
         <section>
-            <h2 class="text-xl font-semibold text-zinc-950">Past appointments</h2>
-            <div class="mt-4 overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm">
-                <table class="min-w-full divide-y divide-zinc-200 text-left text-sm">
-                    <thead class="bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-500"><tr><th class="px-4 py-3">Service</th><th class="px-4 py-3">Date and time</th><th class="px-4 py-3">Therapist</th><th class="px-4 py-3">Status</th><th class="px-4 py-3 text-right">Action</th></tr></thead>
-                    <tbody class="divide-y divide-zinc-100">
+            <h2 class="spa-section-title">Past appointments</h2>
+            <div class="spa-table-wrap mt-5">
+                <table class="spa-table">
+                    <thead><tr><th>Service</th><th>Date and time</th><th>Therapist</th><th>Status</th><th class="text-right">Action</th></tr></thead>
+                    <tbody>
                         @forelse ($pastAppointments as $appointment)
-                            <tr>
-                                <td class="px-4 py-3 font-medium text-zinc-950">{{ $appointment->service_name_snapshot }}</td>
-                                <td class="px-4 py-3 text-zinc-600">{{ $appointment->appointment_date->format('M j, Y') }} at {{ date('g:i A', strtotime($appointment->start_time)) }}</td>
-                                <td class="px-4 py-3 text-zinc-600">{{ $appointment->therapistProfile ? trim($appointment->therapistProfile->first_name.' '.$appointment->therapistProfile->last_name) : 'Unavailable' }}</td>
-                                <td class="px-4 py-3 text-zinc-600">{{ ucfirst(str_replace('_', ' ', $appointment->status)) }}</td>
-                                <td class="px-4 py-3 text-right"><a href="{{ route('customer.appointments.show', $appointment) }}" class="font-semibold text-emerald-700 hover:text-emerald-800">View</a></td>
-                            </tr>
+                            <tr><td class="font-semibold text-cocoa-950">{{ $appointment->service_name_snapshot }}</td><td class="whitespace-nowrap text-cocoa-600">{{ $appointment->appointment_date->format('M j, Y') }} at {{ date('g:i A', strtotime($appointment->start_time)) }}</td><td class="text-cocoa-600">{{ $appointment->therapistProfile ? trim($appointment->therapistProfile->first_name.' '.$appointment->therapistProfile->last_name) : 'Unavailable' }}</td><td><x-status-badge :status="$appointment->status" /></td><td class="text-right"><x-button :href="route('customer.appointments.show', $appointment)" variant="secondary" class="min-h-9 px-3 py-1.5">View</x-button></td></tr>
                         @empty
-                            <tr><td colspan="5" class="px-4 py-8 text-center text-zinc-500">You have no past appointments.</td></tr>
+                            <tr><td colspan="5"><x-empty-state title="No past appointments" description="Completed and previous visits will appear here." /></td></tr>
                         @endforelse
                     </tbody>
                 </table>

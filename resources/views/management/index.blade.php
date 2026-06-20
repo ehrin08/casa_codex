@@ -1,27 +1,46 @@
 @extends('layouts.app')
 
-@section('title', 'Management | Casa Paraiso Spa Management System')
-@section('page_title', 'Management Area')
-@section('page_description', 'Manage Casa Paraiso appointments, services, profiles, and therapist availability.')
+@section('title', 'Management Dashboard | Casa Paraiso')
+@section('page_title', 'Management Dashboard')
+@section('page_description', 'A clear view of Casa Paraiso appointments, services, people, and daily availability.')
 
 @section('content')
     @php
         $sections = [
-            ['title' => 'Appointments', 'description' => 'Review bookings and maintain appointment status history.', 'route' => 'management.appointments.index'],
-            ['title' => 'Services', 'description' => 'Maintain spa services, durations, prices, categories, and status.', 'route' => 'management.services.index'],
-            ['title' => 'Therapists', 'description' => 'Manage therapist profiles, account links, specialties, and staff status.', 'route' => 'management.therapists.index'],
-            ['title' => 'Customers', 'description' => 'Maintain registered and walk-in customer profile details.', 'route' => 'management.customers.index'],
-            ['title' => 'Availability', 'description' => 'Manage recurring and date-specific therapist working windows.', 'route' => 'management.availability.index'],
+            ['title' => 'Appointments', 'description' => 'Review bookings and maintain status history.', 'route' => 'management.appointments.index', 'label' => 'Manage bookings'],
+            ['title' => 'Services', 'description' => 'Maintain treatments, durations, prices, and categories.', 'route' => 'management.services.index', 'label' => 'Manage services'],
+            ['title' => 'Therapists', 'description' => 'Manage therapist profiles, specialties, and staff status.', 'route' => 'management.therapists.index', 'label' => 'Manage team'],
+            ['title' => 'Customers', 'description' => 'Maintain registered and walk-in guest profiles.', 'route' => 'management.customers.index', 'label' => 'Manage guests'],
+            ['title' => 'Availability', 'description' => 'Set recurring and date-specific working windows.', 'route' => 'management.availability.index', 'label' => 'Manage schedule'],
+            ['title' => 'Notifications', 'description' => 'Stay current on new requests and appointment activity.', 'route' => 'notifications.index', 'label' => 'View updates'],
         ];
     @endphp
 
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        @foreach ($sections as $section)
-            <a href="{{ route($section['route']) }}" class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-600 hover:shadow-md">
-                <h2 class="text-lg font-semibold text-zinc-950">{{ $section['title'] }}</h2>
-                <p class="mt-2 text-sm leading-6 text-zinc-600">{{ $section['description'] }}</p>
-                <p class="mt-4 text-xs font-semibold uppercase tracking-wide text-emerald-700">Manage records</p>
+    <div class="mb-8 flex flex-col gap-4 rounded-2xl bg-cocoa-800 p-6 text-cream-50 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+        <div>
+            <p class="text-xs font-bold uppercase tracking-[0.18em] text-sage-200">Operations overview</p>
+            <h2 class="mt-2 text-2xl font-semibold">Welcome, {{ auth()->user()->name }}</h2>
+            <p class="mt-2 text-sm leading-6 text-cream-200">Everything your team needs to keep the spa day flowing smoothly.</p>
+        </div>
+        <x-button :href="route('management.appointments.index')" variant="light">Review appointments</x-button>
+    </div>
+
+    <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        @foreach ($sections as $index => $section)
+            <a href="{{ route($section['route']) }}" class="spa-panel group relative overflow-hidden p-6 transition hover:-translate-y-0.5 hover:border-sage-200 hover:shadow-lg">
+                <span class="flex size-10 items-center justify-center rounded-xl bg-sage-100 text-sm font-black text-sage-700">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                <h2 class="mt-5 text-lg font-semibold text-cocoa-950">{{ $section['title'] }}</h2>
+                <p class="mt-2 text-sm leading-6 text-cocoa-500">{{ $section['description'] }}</p>
+                <p class="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-sage-700">{{ $section['label'] }} <span aria-hidden="true">&rarr;</span></p>
             </a>
+        @endforeach
+
+        @foreach ([['Future Transactions', 'Transaction recording is planned for Sprint 4.'], ['Future Reports', 'Operational reporting will follow transaction workflows.']] as $future)
+            <div class="rounded-2xl border border-dashed border-cream-300 bg-cream-50/60 p-6">
+                <span class="inline-flex rounded-full bg-gold-100 px-2.5 py-1 text-xs font-bold text-gold-600">Coming soon</span>
+                <h2 class="mt-5 text-lg font-semibold text-cocoa-800">{{ $future[0] }}</h2>
+                <p class="mt-2 text-sm leading-6 text-cocoa-500">{{ $future[1] }}</p>
+            </div>
         @endforeach
     </div>
 @endsection

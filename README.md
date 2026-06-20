@@ -4,6 +4,12 @@ Casa Paraiso Spa Management System is a web-based service management and appoint
 
 This repository contains the Sprint 1 foundation, Sprint 2 authentication and management modules, and the Sprint 3 appointment booking, scheduling, role-specific views, status tracking, and in-system notification workflow. Later tasks will add transactions, promotions, analytics, reports, and reviews.
 
+## UI Branding and Design
+
+The interface uses a modern wellness spa design system based on Casa Paraiso's identity: deep cocoa brown, sage green, warm cream, and muted gold. The responsive shared layout includes text branding, a leaf mark built with inline SVG, role-aware desktop and mobile navigation, consistent page spacing, and a branded footer. Reusable Blade components provide cards, buttons, status badges, alerts, empty states, page headers, and accessible form controls.
+
+No remote fonts, images, or other external visual assets are required. See [`docs/ui-branding.md`](docs/ui-branding.md) for design tokens, component usage, responsive behavior, and accessibility notes.
+
 ## Tech Stack
 
 - Laravel

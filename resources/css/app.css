@@ -8,4 +8,95 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-cream-50: #fffdf8;
+    --color-cream-100: #faf5e9;
+    --color-cream-200: #eee4d1;
+    --color-cream-300: #dfcfb4;
+    --color-cocoa-500: #795846;
+    --color-cocoa-600: #644636;
+    --color-cocoa-700: #50362a;
+    --color-cocoa-800: #3f2b23;
+    --color-cocoa-900: #30211c;
+    --color-cocoa-950: #211713;
+    --color-sage-50: #f3f7f0;
+    --color-sage-100: #e3eddd;
+    --color-sage-200: #c7dbc0;
+    --color-sage-500: #66865d;
+    --color-sage-600: #517049;
+    --color-sage-700: #405a3a;
+    --color-sage-800: #354a31;
+    --color-gold-100: #f5ead3;
+    --color-gold-300: #d9bd83;
+    --color-gold-500: #ae8745;
+    --color-gold-600: #8e6b34;
+}
+
+@layer base {
+    ::selection {
+        background: #c7dbc0;
+        color: #30211c;
+    }
+
+    body {
+        background-color: #faf5e9;
+    }
+
+    button,
+    a,
+    input,
+    select,
+    textarea {
+        @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-600 focus-visible:ring-offset-2;
+    }
+}
+
+@layer components {
+    .spa-panel {
+        @apply rounded-2xl border border-cream-200 bg-white shadow-[0_18px_45px_-32px_rgba(48,33,28,0.45)];
+    }
+
+    .spa-table-wrap {
+        @apply overflow-x-auto rounded-2xl border border-cream-200 bg-white shadow-[0_18px_45px_-32px_rgba(48,33,28,0.45)];
+    }
+
+    .spa-table {
+        @apply min-w-full divide-y divide-cream-200 text-left text-sm;
+    }
+
+    .spa-table thead {
+        @apply bg-cream-100/80 text-xs font-semibold uppercase tracking-[0.12em] text-cocoa-600;
+    }
+
+    .spa-table th {
+        @apply whitespace-nowrap px-5 py-3.5;
+    }
+
+    .spa-table tbody {
+        @apply divide-y divide-cream-200;
+    }
+
+    .spa-table tbody tr {
+        @apply transition-colors hover:bg-cream-50;
+    }
+
+    .spa-table td {
+        @apply px-5 py-4;
+    }
+
+    .spa-back-link {
+        @apply inline-flex items-center gap-2 text-sm font-semibold text-cocoa-600 transition hover:text-sage-700;
+    }
+
+    .spa-section-title {
+        @apply text-xl font-semibold tracking-tight text-cocoa-900;
+    }
+
+    .spa-detail-label {
+        @apply text-xs font-semibold uppercase tracking-[0.1em] text-cocoa-500;
+    }
+
+    .spa-detail-value {
+        @apply mt-1.5 font-semibold text-cocoa-900;
+    }
 }

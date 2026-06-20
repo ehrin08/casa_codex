@@ -1,32 +1,37 @@
 @extends('layouts.app')
 
-@section('title', ($therapist->exists ? 'Edit Therapist' : 'Add Therapist').' | Casa Paraiso Spa Management System')
+@section('title', ($therapist->exists ? 'Edit Therapist' : 'Add Therapist').' | Casa Paraiso')
 @section('page_title', $therapist->exists ? 'Edit Therapist Profile' : 'Add Therapist Profile')
-@section('page_description', 'Maintain the therapist identity, optional login link, contact details, specialty, and commission rate.')
+@section('page_description', 'Maintain the therapist identity, account link, contact details, and care specialty.')
 
 @section('content')
-    <div class="mb-6"><a href="{{ route('management.therapists.index') }}" class="text-sm font-medium text-zinc-600 hover:text-zinc-950">Back to therapists</a></div>
-    <form method="POST" action="{{ $therapist->exists ? route('management.therapists.update', $therapist) : route('management.therapists.store') }}" class="mx-auto max-w-4xl space-y-6 rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
+    <div class="mb-6"><a href="{{ route('management.therapists.index') }}" class="spa-back-link"><span aria-hidden="true">&larr;</span> Back to therapists</a></div>
+    <form method="POST" action="{{ $therapist->exists ? route('management.therapists.update', $therapist) : route('management.therapists.store') }}" class="spa-panel mx-auto max-w-4xl space-y-8 p-6 sm:p-8">
         @csrf
         @if ($therapist->exists) @method('PUT') @endif
-        <div class="grid gap-6 sm:grid-cols-2">
-            <div class="sm:col-span-2">
-                <label for="user_id" class="block text-sm font-medium text-zinc-700">Linked therapist account</label>
-                <select id="user_id" name="user_id" class="mt-2 block w-full rounded-md border border-zinc-300 px-3 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"><option value="">No linked account</option>@foreach ($users as $user)<option value="{{ $user->id }}" @selected((string) old('user_id', $therapist->user_id) === (string) $user->id)>{{ $user->name }} ({{ $user->email }})</option>@endforeach</select>
-                <p class="mt-1 text-xs text-zinc-500">Only therapist-role accounts without another profile are available.</p>
-                @error('user_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-            </div>
-            <div><label for="first_name" class="block text-sm font-medium text-zinc-700">First name</label><input id="first_name" name="first_name" value="{{ old('first_name', $therapist->first_name) }}" required class="mt-2 block w-full rounded-md border border-zinc-300 px-3 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20">@error('first_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror</div>
-            <div><label for="last_name" class="block text-sm font-medium text-zinc-700">Last name</label><input id="last_name" name="last_name" value="{{ old('last_name', $therapist->last_name) }}" class="mt-2 block w-full rounded-md border border-zinc-300 px-3 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20">@error('last_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror</div>
-            <div><label for="employee_code" class="block text-sm font-medium text-zinc-700">Employee code</label><input id="employee_code" name="employee_code" value="{{ old('employee_code', $therapist->employee_code) }}" class="mt-2 block w-full rounded-md border border-zinc-300 px-3 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20">@error('employee_code') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror</div>
-            <div><label for="specialty" class="block text-sm font-medium text-zinc-700">Specialty</label><input id="specialty" name="specialty" value="{{ old('specialty', $therapist->specialty) }}" class="mt-2 block w-full rounded-md border border-zinc-300 px-3 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20">@error('specialty') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror</div>
-            <div><label for="email" class="block text-sm font-medium text-zinc-700">Email</label><input id="email" name="email" type="email" value="{{ old('email', $therapist->email) }}" class="mt-2 block w-full rounded-md border border-zinc-300 px-3 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20">@error('email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror</div>
-            <div><label for="phone" class="block text-sm font-medium text-zinc-700">Phone</label><input id="phone" name="phone" value="{{ old('phone', $therapist->phone) }}" class="mt-2 block w-full rounded-md border border-zinc-300 px-3 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20">@error('phone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror</div>
-            <div><label for="commission_rate" class="block text-sm font-medium text-zinc-700">Commission rate (%)</label><input id="commission_rate" name="commission_rate" type="number" min="0" max="100" step="0.01" value="{{ old('commission_rate', $therapist->commission_rate ?? 0) }}" required class="mt-2 block w-full rounded-md border border-zinc-300 px-3 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20">@error('commission_rate') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror</div>
-            <div><label for="status" class="block text-sm font-medium text-zinc-700">Status</label><select id="status" name="status" required class="mt-2 block w-full rounded-md border border-zinc-300 px-3 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"><option value="active" @selected(old('status', $therapist->status ?: 'active') === 'active')>Active</option><option value="inactive" @selected(old('status', $therapist->status) === 'inactive')>Inactive</option></select>@error('status') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror</div>
-            <div><label for="hired_at" class="block text-sm font-medium text-zinc-700">Hire date</label><input id="hired_at" name="hired_at" type="date" value="{{ old('hired_at', $therapist->hired_at?->format('Y-m-d')) }}" class="mt-2 block w-full rounded-md border border-zinc-300 px-3 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20">@error('hired_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror</div>
-            <div class="sm:col-span-2"><label for="notes" class="block text-sm font-medium text-zinc-700">Notes</label><textarea id="notes" name="notes" rows="4" class="mt-2 block w-full rounded-md border border-zinc-300 px-3 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20">{{ old('notes', $therapist->notes) }}</textarea>@error('notes') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror</div>
+
+        <div>
+            <h2 class="spa-section-title">Profile details</h2>
+            <p class="mt-1 text-sm text-cocoa-500">Account links are optional, while the care profile remains available for scheduling.</p>
         </div>
-        <div class="flex justify-end gap-3 border-t border-zinc-200 pt-5"><a href="{{ route('management.therapists.index') }}" class="rounded-md border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50">Cancel</a><button class="rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">{{ $therapist->exists ? 'Save changes' : 'Create therapist' }}</button></div>
+
+        <div class="grid gap-6 sm:grid-cols-2">
+            <x-form.select name="user_id" label="Linked therapist account" hint="Only therapist-role accounts without another profile are available." wrapper-class="sm:col-span-2">
+                <option value="">No linked account</option>
+                @foreach ($users as $user)<option value="{{ $user->id }}" @selected((string) old('user_id', $therapist->user_id) === (string) $user->id)>{{ $user->name }} ({{ $user->email }})</option>@endforeach
+            </x-form.select>
+            <x-form.input name="first_name" label="First name" :value="$therapist->first_name" required />
+            <x-form.input name="last_name" label="Last name" :value="$therapist->last_name" />
+            <x-form.input name="employee_code" label="Employee code" :value="$therapist->employee_code" />
+            <x-form.input name="specialty" label="Specialty" :value="$therapist->specialty" />
+            <x-form.input name="email" label="Email" type="email" :value="$therapist->email" />
+            <x-form.input name="phone" label="Phone" :value="$therapist->phone" />
+            <x-form.input name="commission_rate" label="Commission rate (%)" type="number" :value="$therapist->commission_rate ?? 0" min="0" max="100" step="0.01" required />
+            <x-form.select name="status" label="Status" required><option value="active" @selected(old('status', $therapist->status ?: 'active') === 'active')>Active</option><option value="inactive" @selected(old('status', $therapist->status) === 'inactive')>Inactive</option></x-form.select>
+            <x-form.input name="hired_at" label="Hire date" type="date" :value="$therapist->hired_at?->format('Y-m-d')" />
+            <x-form.textarea name="notes" label="Notes" :value="$therapist->notes" rows="4" wrapper-class="sm:col-span-2" />
+        </div>
+
+        <div class="flex flex-col-reverse gap-3 border-t border-cream-200 pt-6 sm:flex-row sm:justify-end"><x-button :href="route('management.therapists.index')" variant="secondary">Cancel</x-button><x-button type="submit">{{ $therapist->exists ? 'Save changes' : 'Create therapist' }}</x-button></div>
     </form>
 @endsection

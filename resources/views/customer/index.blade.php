@@ -1,20 +1,41 @@
 @extends('layouts.app')
 
-@section('title', 'Customer | Casa Paraiso Spa Management System')
-@section('page_title', 'Customer Area')
-@section('page_description', 'Book a spa service and manage your customer experience with Casa Paraiso.')
+@section('title', 'Customer Dashboard | Casa Paraiso')
+@section('page_title', 'Your Wellness Dashboard')
+@section('page_description', 'Plan a restorative visit and follow your Casa Paraiso appointments in one calm space.')
 
 @section('content')
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <article class="rounded-lg border border-emerald-200 bg-white p-5 shadow-sm">
-            <h2 class="text-lg font-semibold text-zinc-950">Book Appointment</h2>
-            <p class="mt-2 text-sm leading-6 text-zinc-600">Select an active spa service, therapist, date, and preferred start time.</p>
-            <a href="{{ route('customer.appointments.create') }}" class="mt-5 inline-flex rounded-md bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">
-                Book an appointment
-            </a>
-        </article>
+    <x-card class="mb-8 overflow-hidden bg-cocoa-800 text-cream-50" padding="false">
+        <div class="relative p-6 sm:p-8">
+            <div class="absolute -right-10 -top-16 size-48 rounded-full bg-sage-600/30" aria-hidden="true"></div>
+            <div class="relative max-w-2xl">
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-sage-200">Your next moment of calm</p>
+                <h2 class="mt-2 text-2xl font-semibold">What would feel restorative today?</h2>
+                <p class="mt-2 text-sm leading-6 text-cream-200">Choose a service, preferred therapist, and time that fits your day.</p>
+                <x-button :href="route('customer.appointments.create')" variant="light" class="mt-5">Book an appointment</x-button>
+            </div>
+        </div>
+    </x-card>
 
-        <a href="{{ route('customer.appointments.index') }}" class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-600 hover:shadow-md"><h2 class="text-lg font-semibold text-zinc-950">My Appointments</h2><p class="mt-2 text-sm leading-6 text-zinc-600">Review upcoming and previous appointment details.</p><p class="mt-4 text-xs font-semibold uppercase tracking-wide text-emerald-700">View appointments</p></a>
-        <a href="{{ route('notifications.index') }}" class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-600 hover:shadow-md"><h2 class="text-lg font-semibold text-zinc-950">Notifications</h2><p class="mt-2 text-sm leading-6 text-zinc-600">Review appointment status updates.</p><p class="mt-4 text-xs font-semibold uppercase tracking-wide text-emerald-700">View notifications</p></a>
+    <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        @foreach ([
+            ['Book Appointment', 'Select a service, therapist, date, and preferred start time.', 'customer.appointments.create', 'Start booking'],
+            ['My Appointments', 'Review upcoming visits and your previous appointment details.', 'customer.appointments.index', 'View appointments'],
+            ['Notifications', 'Stay informed when your appointment status changes.', 'notifications.index', 'View updates'],
+            ['Services', 'Explore active treatments, durations, and prices before you book.', 'customer.appointments.create', 'Browse services'],
+        ] as $section)
+            <a href="{{ route($section[2]) }}" class="spa-panel group p-6 transition hover:-translate-y-0.5 hover:border-sage-200 hover:shadow-lg">
+                <h2 class="text-lg font-semibold text-cocoa-950">{{ $section[0] }}</h2>
+                <p class="mt-2 text-sm leading-6 text-cocoa-500">{{ $section[1] }}</p>
+                <p class="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-sage-700">{{ $section[3] }} <span aria-hidden="true">&rarr;</span></p>
+            </a>
+        @endforeach
+        @foreach ([['Future Promotions', 'Seasonal wellness offers will appear here in a future sprint.'], ['Future Reviews', 'Service feedback will be introduced after transactions.']] as $future)
+            <div class="rounded-2xl border border-dashed border-cream-300 bg-cream-50/60 p-6">
+                <span class="inline-flex rounded-full bg-gold-100 px-2.5 py-1 text-xs font-bold text-gold-600">Coming soon</span>
+                <h2 class="mt-5 text-lg font-semibold text-cocoa-800">{{ $future[0] }}</h2>
+                <p class="mt-2 text-sm leading-6 text-cocoa-500">{{ $future[1] }}</p>
+            </div>
+        @endforeach
     </div>
 @endsection
