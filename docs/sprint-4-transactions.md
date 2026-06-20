@@ -2,7 +2,7 @@
 
 ## Scope
 
-CPSMS-40 adds management-side over-the-counter cash transaction recording for completed appointments. It includes transaction selection, validation, listing, and receipt-style details. Commission integration is provided by CPSMS-41; online payments, payment gateways, reports, promotions, RFM analysis, reviews, SMS, and email delivery remain outside this workflow.
+CPSMS-40 adds management-side over-the-counter cash transaction recording for completed appointments. It includes transaction selection, validation, listing, and receipt-style details. It does not include online payments, payment gateways, commissions, reports, promotions, RFM analysis, reviews, SMS, or email delivery.
 
 ## Routes
 
@@ -68,10 +68,10 @@ The receipt displays Casa Paraiso branding, receipt reference, transaction date,
 - `TransactionRecorder` independently rejects non-management callers.
 - Financial totals are always recomputed on the server.
 
-## Commission Integration
+## Commission Boundary
 
-After CPSMS-41, a qualifying paid transaction creates one pending therapist commission inside the same database transaction. Pending and void transactions create no commission. Commission calculation and status behavior are documented in `docs/sprint-4-commissions.md`.
+CPSMS-40 does not create or update `therapist_commissions`. The transaction feature tests assert that successful cash recording leaves that table empty. Commission computation will be implemented separately in CPSMS-41.
 
 ## Tests
 
-`tests/Feature/Management/TransactionRecordingTest.php` covers management access, guest redirects, role restrictions, completed appointment eligibility, ineligible statuses, snapshot pricing, service-price fallback, discounts, cash tender and change, payment status validation, duplicate prevention, receipt rendering, and paid transaction commission integration.
+`tests/Feature/Management/TransactionRecordingTest.php` covers management access, guest redirects, role restrictions, completed appointment eligibility, ineligible statuses, snapshot pricing, service-price fallback, discounts, cash tender and change, payment status validation, duplicate prevention, receipt rendering, and the no-commission boundary.
