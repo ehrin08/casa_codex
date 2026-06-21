@@ -16,7 +16,10 @@ class ServiceController extends Controller
     {
         $services = Service::with('category')->orderBy('name')->paginate(15);
 
-        return view('management.services.index', compact('services'));
+        return view('management.services.index', [
+            'services' => $services,
+            'categories' => $this->categories(),
+        ]);
     }
 
     public function create(): View

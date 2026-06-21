@@ -19,7 +19,13 @@ class TherapistProfileController extends Controller
             ->orderBy('last_name')
             ->paginate(15);
 
-        return view('management.therapists.index', compact('therapists'));
+        $users = User::query()
+            ->whereHas('role', fn ($query) => $query->where('name', 'therapist'))
+            ->with('therapistProfile')
+            ->orderBy('name')
+            ->get();
+
+        return view('management.therapists.index', compact('therapists', 'users'));
     }
 
     public function create(): View
@@ -69,6 +75,7 @@ class TherapistProfileController extends Controller
     {
         return User::query()
             ->whereHas('role', fn ($query) => $query->where('name', 'therapist'))
+            ->with('therapistProfile')
             ->where(function ($query) use ($therapist) {
                 $query->whereDoesntHave('therapistProfile');
 

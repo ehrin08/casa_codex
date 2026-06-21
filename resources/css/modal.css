@@ -1,0 +1,54 @@
+.spa-modal {
+    width: calc(100% - 2rem);
+    max-height: calc(100dvh - 2rem);
+    margin: auto;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    color: #30211c;
+}
+
+.spa-modal::backdrop {
+    background: rgba(33, 23, 19, 0.68);
+    backdrop-filter: blur(3px);
+}
+
+.spa-modal-shell {
+    display: flex;
+    max-height: calc(100dvh - 2rem);
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #eee4d1;
+    border-radius: 1rem;
+    background: #fff;
+    box-shadow: 0 25px 50px -12px rgba(33, 23, 19, 0.35);
+}
+
+.spa-modal-body {
+    min-height: 0;
+    flex: 1 1 0%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.spa-modal[open] {
+    animation: spa-modal-enter 160ms ease-out;
+}
+
+@keyframes spa-modal-enter {
+    from {
+        opacity: 0;
+        transform: translateY(0.75rem) scale(0.985);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spa-modal[open] {
+        animation: none;
+    }
+}

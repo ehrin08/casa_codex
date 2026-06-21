@@ -19,7 +19,13 @@ class CustomerProfileController extends Controller
             ->orderBy('last_name')
             ->paginate(15);
 
-        return view('management.customers.index', compact('customers'));
+        $users = User::query()
+            ->whereHas('role', fn ($query) => $query->where('name', 'customer'))
+            ->with('customerProfile')
+            ->orderBy('name')
+            ->get();
+
+        return view('management.customers.index', compact('customers', 'users'));
     }
 
     public function create(): View
@@ -67,6 +73,7 @@ class CustomerProfileController extends Controller
     {
         return User::query()
             ->whereHas('role', fn ($query) => $query->where('name', 'customer'))
+            ->with('customerProfile')
             ->where(function ($query) use ($customer) {
                 $query->whereDoesntHave('customerProfile');
 

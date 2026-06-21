@@ -62,6 +62,93 @@ class ManagementCrudTest extends TestCase
         }
     }
 
+    public function test_management_crud_indexes_render_modal_interactions_and_full_page_fallbacks(): void
+    {
+        $manager = $this->createUserWithRole('management');
+        $service = Service::create([
+            'name' => 'Modal Service',
+            'duration_minutes' => 60,
+            'price' => 750,
+            'status' => 'active',
+        ]);
+        $therapist = TherapistProfile::create([
+            'first_name' => 'Modal',
+            'last_name' => 'Therapist',
+            'commission_rate' => 15,
+            'status' => 'active',
+        ]);
+        $customer = CustomerProfile::create([
+            'first_name' => 'Modal',
+            'last_name' => 'Customer',
+            'is_active' => true,
+        ]);
+        $availability = TherapistAvailability::create([
+            'therapist_profile_id' => $therapist->id,
+            'day_of_week' => 1,
+            'start_time' => '09:00',
+            'end_time' => '17:00',
+            'status' => 'active',
+        ]);
+
+        $modules = [
+            'service' => [
+                route('management.services.index'),
+                route('management.services.create'),
+                route('management.services.edit', $service),
+            ],
+            'therapist' => [
+                route('management.therapists.index'),
+                route('management.therapists.create'),
+                route('management.therapists.edit', $therapist),
+            ],
+            'customer' => [
+                route('management.customers.index'),
+                route('management.customers.create'),
+                route('management.customers.edit', $customer),
+            ],
+            'availability' => [
+                route('management.availability.index'),
+                route('management.availability.create'),
+                route('management.availability.edit', $availability),
+            ],
+        ];
+
+        foreach ($modules as $module => [$indexRoute, $createRoute, $editRoute]) {
+            $this->actingAs($manager)
+                ->get($indexRoute)
+                ->assertOk()
+                ->assertSee('id="'.$module.'-create-modal"', false)
+                ->assertSee('id="'.$module.'-edit-modal"', false)
+                ->assertSee('id="'.$module.'-detail-modal"', false)
+                ->assertSee('id="'.$module.'-status-modal"', false)
+                ->assertSee('href="'.$createRoute.'"', false)
+                ->assertSee('href="'.$editRoute.'"', false)
+                ->assertSee('data-record-form', false)
+                ->assertSee('data-confirm-modal="'.$module.'-status-modal"', false);
+        }
+    }
+
+    public function test_failed_modal_validation_reopens_the_form_with_old_input_and_accessible_errors(): void
+    {
+        $manager = $this->createUserWithRole('management');
+
+        $response = $this->actingAs($manager)
+            ->followingRedirects()
+            ->from(route('management.services.index'))
+            ->post(route('management.services.store'), [
+                '_modal' => 'service-create',
+                'name' => 'Incomplete Modal Service',
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertSee('id="service-create-modal"', false)
+            ->assertSee('data-modal-open-on-load', false)
+            ->assertSee('value="Incomplete Modal Service"', false)
+            ->assertSee('aria-invalid="true"', false)
+            ->assertSee('The duration minutes field is required.');
+    }
+
     public function test_guests_are_redirected_from_management_crud_pages(): void
     {
         foreach ($this->moduleIndexRoutes() as $route) {

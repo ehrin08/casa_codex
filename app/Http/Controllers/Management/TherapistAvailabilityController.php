@@ -20,7 +20,10 @@ class TherapistAvailabilityController extends Controller
             ->orderBy('start_time')
             ->paginate(15);
 
-        return view('management.availability.index', compact('availabilities'));
+        return view('management.availability.index', [
+            'availabilities' => $availabilities,
+            'therapists' => $this->therapists(),
+        ]);
     }
 
     public function create(): View
