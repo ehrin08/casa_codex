@@ -24,6 +24,51 @@
             </x-card>
 
             <x-card>
+                <div class="flex flex-col gap-3 border-b border-cream-200 pb-5 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-sage-700">Assignment support</p>
+                        <h2 class="mt-1 text-lg font-semibold text-cocoa-950">Therapist recommendations</h2>
+                        <p class="mt-1 text-sm leading-6 text-cocoa-500">Ranked using full-window availability, schedule conflicts, and blocking same-day appointments.</p>
+                    </div>
+                    <div class="shrink-0 rounded-xl bg-cream-100 px-4 py-3 sm:text-right">
+                        <p class="text-xs font-bold uppercase tracking-wide text-cocoa-500">Current therapist</p>
+                        <p class="mt-1 font-semibold text-cocoa-900">{{ $appointment->therapistProfile ? trim($appointment->therapistProfile->first_name.' '.$appointment->therapistProfile->last_name) : 'Not assigned' }}</p>
+                    </div>
+                </div>
+
+                <div class="spa-table-wrap mt-6">
+                    <table class="spa-table">
+                        <thead><tr><th>Rank</th><th>Therapist</th><th>Availability</th><th>Conflict</th><th>Workload</th><th>Recommendation</th></tr></thead>
+                        <tbody>
+                            @forelse ($therapistRecommendations as $index => $recommendation)
+                                @php
+                                    $labelClasses = match ($recommendation['label']) {
+                                        'Best match' => 'bg-sage-100 text-sage-800 ring-sage-600/20',
+                                        'Available', 'Current therapist' => 'bg-cream-200 text-cocoa-800 ring-cocoa-500/20',
+                                        'Has conflict' => 'bg-amber-100 text-amber-900 ring-amber-600/20',
+                                        default => 'bg-rose-100 text-rose-800 ring-rose-600/20',
+                                    };
+                                @endphp
+                                <tr>
+                                    <td class="font-bold text-cocoa-500">{{ $index + 1 }}</td>
+                                    <td>
+                                        <p class="font-semibold text-cocoa-950">{{ trim($recommendation['therapist']->first_name.' '.$recommendation['therapist']->last_name) }}</p>
+                                        @if ($recommendation['is_current'])<span class="mt-1 inline-flex rounded-full bg-sage-50 px-2 py-0.5 text-[0.7rem] font-bold uppercase tracking-wide text-sage-700 ring-1 ring-inset ring-sage-600/20">Current</span>@endif
+                                    </td>
+                                    <td><span class="font-semibold {{ $recommendation['is_available'] ? 'text-sage-700' : 'text-rose-700' }}">{{ $recommendation['is_available'] ? 'Available' : 'Unavailable' }}</span><p class="mt-1 text-xs text-cocoa-500">Full appointment window</p></td>
+                                    <td><span class="font-semibold {{ $recommendation['has_conflict'] ? 'text-amber-800' : 'text-sage-700' }}">{{ $recommendation['has_conflict'] ? 'Has conflict' : 'No conflict' }}</span></td>
+                                    <td><span class="font-semibold text-cocoa-900">{{ $recommendation['workload_count'] }}</span><p class="mt-1 text-xs text-cocoa-500">blocking {{ Str::plural('appointment', $recommendation['workload_count']) }}</p></td>
+                                    <td class="min-w-64"><span class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold ring-1 ring-inset {{ $labelClasses }}">{{ $recommendation['label'] }}</span><p class="mt-2 text-xs leading-5 text-cocoa-600">{{ $recommendation['reason'] }}</p></td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="6"><x-empty-state title="No active therapists" description="Activate a therapist profile before reviewing assignment options." /></td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </x-card>
+
+            <x-card>
                 <h2 class="spa-section-title">Status history</h2>
                 <p class="mt-1 text-sm text-cocoa-500">A chronological record of every appointment change.</p>
                 <div class="relative mt-6 space-y-0 before:absolute before:bottom-3 before:left-[0.45rem] before:top-3 before:w-px before:bg-cream-300">

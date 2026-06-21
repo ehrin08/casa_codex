@@ -9,6 +9,7 @@ use App\Models\AppointmentStatusHistory;
 use App\Models\CustomerProfile;
 use App\Models\TherapistProfile;
 use App\Services\AppointmentNotificationService;
+use App\Services\TherapistAssignmentRecommender;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -49,8 +50,10 @@ class AppointmentController extends Controller
         return view('management.appointments.index', compact('appointments', 'therapists', 'customers', 'filters'));
     }
 
-    public function show(Appointment $appointment): View
-    {
+    public function show(
+        Appointment $appointment,
+        TherapistAssignmentRecommender $recommender,
+    ): View {
         $appointment->load([
             'customerProfile',
             'therapistProfile',
@@ -61,7 +64,9 @@ class AppointmentController extends Controller
                 ->orderByDesc('changed_at'),
         ]);
 
-        return view('management.appointments.show', compact('appointment'));
+        $therapistRecommendations = $recommender->recommend($appointment);
+
+        return view('management.appointments.show', compact('appointment', 'therapistRecommendations'));
     }
 
     public function updateStatus(
