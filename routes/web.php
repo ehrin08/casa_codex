@@ -44,6 +44,8 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('transactions', TransactionController::class)
             ->only(['index', 'create', 'store', 'show']);
+        Route::patch('transactions/{transaction}/mark-paid', [TransactionController::class, 'markPaid'])
+            ->name('transactions.mark-paid');
 
         Route::get('commissions', [TherapistCommissionController::class, 'index'])
             ->name('commissions.index');

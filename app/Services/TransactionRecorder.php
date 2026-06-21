@@ -77,6 +77,8 @@ class TransactionRecorder
                 'change_due' => $amountTenderedCents === null ? null : $this->fromCents($amountTenderedCents - $totalCents),
                 'payment_method' => Transaction::PAYMENT_METHOD_CASH,
                 'payment_status' => $data['payment_status'],
+                'paid_by_user_id' => $isPaid ? $cashier->id : null,
+                'paid_at' => $isPaid ? now() : null,
                 'transaction_date' => $data['transaction_date'],
                 'notes' => $data['notes'] ?? null,
             ]);

@@ -55,6 +55,9 @@ class TransactionRecordingTest extends TestCase
         $this->get(route('management.transactions.show', $transaction))->assertRedirect('/login');
         $this->post(route('management.transactions.store'), $this->validTransactionData($appointment))
             ->assertRedirect('/login');
+        $this->patch(route('management.transactions.mark-paid', $transaction), [
+            'amount_tendered' => '850.00',
+        ])->assertRedirect('/login');
     }
 
     public function test_therapists_and_customers_cannot_access_transaction_workflow(): void
@@ -70,6 +73,9 @@ class TransactionRecordingTest extends TestCase
             $this->get(route('management.transactions.show', $transaction))->assertForbidden();
             $this->post(route('management.transactions.store'), $this->validTransactionData($appointment))
                 ->assertForbidden();
+            $this->patch(route('management.transactions.mark-paid', $transaction), [
+                'amount_tendered' => '850.00',
+            ])->assertForbidden();
         }
     }
 
@@ -104,6 +110,8 @@ class TransactionRecordingTest extends TestCase
         $this->assertSame('200.00', $transaction->change_due);
         $this->assertSame(Transaction::PAYMENT_METHOD_CASH, $transaction->payment_method);
         $this->assertSame(Transaction::STATUS_PAID, $transaction->payment_status);
+        $this->assertSame($manager->id, $transaction->paid_by_user_id);
+        $this->assertNotNull($transaction->paid_at);
         $this->assertDatabaseCount('therapist_commissions', 1);
     }
 
@@ -233,6 +241,74 @@ class TransactionRecordingTest extends TestCase
         $this->get(route('management.appointments.show', $appointment))
             ->assertOk()
             ->assertSee('href="'.route('management.transactions.show', $transaction).'"', false);
+    }
+
+    public function test_management_can_confirm_pending_cash_payment_and_create_commission(): void
+    {
+        $recorder = $this->createUserWithRole('management');
+        $paymentManager = $this->createUserWithRole('management');
+        $appointment = $this->createAppointment();
+        $transaction = Transaction::create([
+            'appointment_id' => $appointment->id,
+            'customer_profile_id' => $appointment->customer_profile_id,
+            'cashier_user_id' => $recorder->id,
+            'subtotal' => 850,
+            'discount_amount' => 50,
+            'total_amount' => 800,
+            'payment_method' => Transaction::PAYMENT_METHOD_CASH,
+            'payment_status' => Transaction::STATUS_PENDING,
+            'transaction_date' => now(),
+        ]);
+
+        $this->actingAs($paymentManager)
+            ->get(route('management.transactions.show', $transaction))
+            ->assertOk()
+            ->assertSee('Mark transaction paid');
+
+        $this->patch(route('management.transactions.mark-paid', $transaction), [
+            'amount_tendered' => '1000.00',
+        ])
+            ->assertRedirect(route('management.transactions.show', $transaction))
+            ->assertSessionHas('success');
+
+        $transaction->refresh();
+        $this->assertSame(Transaction::STATUS_PAID, $transaction->payment_status);
+        $this->assertSame('1000.00', $transaction->amount_tendered);
+        $this->assertSame('200.00', $transaction->change_due);
+        $this->assertSame($paymentManager->id, $transaction->paid_by_user_id);
+        $this->assertNotNull($transaction->paid_at);
+        $this->assertDatabaseCount('therapist_commissions', 1);
+    }
+
+    public function test_pending_payment_confirmation_revalidates_amount_status_and_appointment(): void
+    {
+        $manager = $this->createUserWithRole('management');
+        $appointment = $this->createAppointment();
+        $transaction = Transaction::create([
+            'appointment_id' => $appointment->id,
+            'customer_profile_id' => $appointment->customer_profile_id,
+            'cashier_user_id' => $manager->id,
+            'subtotal' => 850,
+            'discount_amount' => 50,
+            'total_amount' => 800,
+            'payment_method' => Transaction::PAYMENT_METHOD_CASH,
+            'payment_status' => Transaction::STATUS_PENDING,
+            'transaction_date' => now(),
+        ]);
+
+        $this->actingAs($manager)
+            ->patch(route('management.transactions.mark-paid', $transaction), [
+                'amount_tendered' => '799.99',
+            ])
+            ->assertSessionHasErrors('amount_tendered');
+
+        $appointment->update(['status' => Appointment::STATUS_CANCELLED]);
+        $this->patch(route('management.transactions.mark-paid', $transaction), [
+            'amount_tendered' => '800.00',
+        ])->assertSessionHasErrors('payment_status');
+
+        $this->assertSame(Transaction::STATUS_PENDING, $transaction->fresh()->payment_status);
+        $this->assertDatabaseCount('therapist_commissions', 0);
     }
 
     private function createUserWithRole(string $roleName): User

@@ -37,6 +37,7 @@
                     <div><dt class="spa-detail-label">Appointment time</dt><dd class="spa-detail-value">{{ $appointment ? date('g:i A', strtotime($appointment->start_time)).' to '.date('g:i A', strtotime($appointment->end_time)) : 'Unavailable' }}</dd></div>
                     <div><dt class="spa-detail-label">Payment method</dt><dd class="spa-detail-value capitalize">{{ $transaction->payment_method }}</dd></div>
                     <div><dt class="spa-detail-label">Appointment reference</dt><dd class="spa-detail-value">{{ $appointment ? '#'.$appointment->id : 'Unavailable' }}</dd></div>
+                    @if ($transaction->paid_at)<div><dt class="spa-detail-label">Payment confirmed</dt><dd class="spa-detail-value">{{ $transaction->paid_at->format('F j, Y g:i A') }}</dd></div><div><dt class="spa-detail-label">Confirmed by</dt><dd class="spa-detail-value">{{ $transaction->paidBy?->name ?? 'User unavailable' }}</dd></div>@endif
                 </dl>
 
                 <div class="space-y-3 border-b border-dashed border-cream-300 py-7 text-sm">
@@ -47,6 +48,24 @@
                 </div>
 
                 @if ($transaction->notes)<div class="border-b border-dashed border-cream-300 py-6"><p class="spa-detail-label">Transaction notes</p><p class="mt-2 whitespace-pre-line text-sm leading-6 text-cocoa-700">{{ $transaction->notes }}</p></div>@endif
+
+                @if ($transaction->payment_status === \App\Models\Transaction::STATUS_PENDING)
+                    <form method="POST" action="{{ route('management.transactions.mark-paid', $transaction) }}" class="border-b border-dashed border-cream-300 py-7" onsubmit="return confirm('Confirm this cash payment?')">
+                        @csrf
+                        @method('PATCH')
+                        <h2 class="font-semibold text-cocoa-950">Confirm cash payment</h2>
+                        <p class="mt-1 text-sm text-cocoa-500">This records the manager and confirmation time, then computes any eligible therapist commission.</p>
+                        <div class="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end">
+                            <x-form.input name="amount_tendered" label="Cash tendered (PHP)" type="number" :value="$transaction->total_amount" :min="$transaction->total_amount" step="0.01" required wrapper-class="flex-1" />
+                            <x-button type="submit">Mark transaction paid</x-button>
+                        </div>
+                        @error('payment_status')<p class="mt-2 text-sm font-medium text-red-700">{{ $message }}</p>@enderror
+                    </form>
+                @elseif ($transaction->payment_status === \App\Models\Transaction::STATUS_PAID && ! $therapist)
+                    <x-alert type="warning" class="mt-7" title="Commission not created">This completed paid transaction has no assigned therapist, so no commission can be created.</x-alert>
+                @elseif ($transaction->payment_status === \App\Models\Transaction::STATUS_PAID && (float) $therapist->commission_rate <= 0 && ! $transaction->therapistCommission)
+                    <x-alert type="warning" class="mt-7" title="Commission not created">The assigned therapist has a 0% commission rate, so this transaction has no payable commission.</x-alert>
+                @endif
 
                 <p class="pt-7 text-center text-sm leading-6 text-cocoa-500">Thank you for choosing Casa Paraiso. This receipt records an over-the-counter cash transaction and is not an online payment confirmation.</p>
             </div>

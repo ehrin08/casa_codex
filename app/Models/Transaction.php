@@ -27,6 +27,7 @@ class Transaction extends Model
         'appointment_id',
         'customer_profile_id',
         'cashier_user_id',
+        'paid_by_user_id',
         'subtotal',
         'discount_amount',
         'total_amount',
@@ -34,6 +35,7 @@ class Transaction extends Model
         'change_due',
         'payment_method',
         'payment_status',
+        'paid_at',
         'transaction_date',
         'notes',
     ];
@@ -45,6 +47,7 @@ class Transaction extends Model
         'amount_tendered' => 'decimal:2',
         'change_due' => 'decimal:2',
         'transaction_date' => 'datetime',
+        'paid_at' => 'datetime',
     ];
 
     public function appointment(): BelongsTo
@@ -60,6 +63,11 @@ class Transaction extends Model
     public function cashier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'cashier_user_id');
+    }
+
+    public function paidBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'paid_by_user_id');
     }
 
     public function therapistCommissions(): HasMany

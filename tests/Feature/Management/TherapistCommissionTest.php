@@ -140,6 +140,134 @@ class TherapistCommissionTest extends TestCase
         $this->assertSame('200.00', $commission->commission_amount);
     }
 
+    public function test_cancelled_and_no_show_appointments_void_pending_commissions(): void
+    {
+        foreach ([Appointment::STATUS_CANCELLED, Appointment::STATUS_NO_SHOW] as $index => $status) {
+            [, , $appointment] = $this->createAppointment('Invalid Status Therapist '.$index);
+            $commission = $this->createTransaction($appointment)->therapistCommission;
+
+            $appointment->update(['status' => $status]);
+
+            $this->assertSame(TherapistCommission::STATUS_VOID, $commission->refresh()->status);
+        }
+    }
+
+    public function test_returning_appointment_to_completed_reactivates_the_same_commission(): void
+    {
+        [, , $appointment] = $this->createAppointment();
+        $commission = $this->createTransaction($appointment)->therapistCommission;
+
+        $appointment->update(['status' => Appointment::STATUS_CANCELLED]);
+        $this->assertSame(TherapistCommission::STATUS_VOID, $commission->refresh()->status);
+
+        $appointment->update(['status' => Appointment::STATUS_COMPLETED]);
+
+        $this->assertSame(TherapistCommission::STATUS_PENDING, $commission->refresh()->status);
+        $this->assertDatabaseCount('therapist_commissions', 1);
+    }
+
+    public function test_settled_commission_remains_historical_when_appointment_is_cancelled(): void
+    {
+        $manager = $this->createUser('management');
+        [, , $appointment] = $this->createAppointment();
+        $commission = $this->createTransaction($appointment)->therapistCommission;
+
+        $this->actingAs($manager)
+            ->patch(route('management.commissions.mark-paid', $commission))
+            ->assertSessionHasNoErrors();
+
+        $appointment->update(['status' => Appointment::STATUS_CANCELLED]);
+
+        $this->assertSame(TherapistCommission::STATUS_PAID, $commission->refresh()->status);
+        $this->assertNotNull($commission->paid_at);
+    }
+
+    public function test_missing_therapist_does_not_create_commission_and_shows_reason(): void
+    {
+        $manager = $this->createUser('management');
+        [, , $appointment] = $this->createAppointment();
+        $appointment->update(['therapist_profile_id' => null]);
+        $transaction = $this->createTransaction($appointment);
+
+        $this->assertDatabaseCount('therapist_commissions', 0);
+
+        $this->actingAs($manager)
+            ->get(route('management.transactions.show', $transaction))
+            ->assertOk()
+            ->assertSee('no assigned therapist');
+    }
+
+    public function test_zero_rate_therapist_has_no_payable_commission_and_shows_reason(): void
+    {
+        $manager = $this->createUser('management');
+        [, , $appointment] = $this->createAppointment(rate: 0);
+        $transaction = $this->createTransaction($appointment);
+
+        $this->assertDatabaseCount('therapist_commissions', 0);
+
+        $this->actingAs($manager)
+            ->get(route('management.transactions.show', $transaction))
+            ->assertOk()
+            ->assertSee('0% commission rate');
+    }
+
+    public function test_settlement_is_blocked_when_appointment_is_no_longer_completed(): void
+    {
+        $manager = $this->createUser('management');
+        [, , $appointment] = $this->createAppointment();
+        $commission = $this->createTransaction($appointment)->therapistCommission;
+        $appointment->update(['status' => Appointment::STATUS_NO_SHOW]);
+
+        $this->actingAs($manager)
+            ->patch(route('management.commissions.mark-paid', $commission))
+            ->assertSessionHasErrors([
+                'status' => 'Settlement is blocked because the appointment is no longer completed.',
+            ]);
+
+        $this->assertSame(TherapistCommission::STATUS_VOID, $commission->refresh()->status);
+    }
+
+    public function test_settlement_is_blocked_for_missing_or_mismatched_records_and_invalid_amount(): void
+    {
+        $manager = $this->createUser('management');
+
+        [, , $missingTransactionAppointment] = $this->createAppointment('Missing Transaction Therapist');
+        $missingTransactionCommission = $this->createTransaction($missingTransactionAppointment)->therapistCommission;
+        $missingTransactionCommission->transaction->delete();
+        $this->actingAs($manager)
+            ->patch(route('management.commissions.mark-paid', $missingTransactionCommission))
+            ->assertSessionHasErrors([
+                'status' => 'Settlement is blocked because the linked transaction no longer exists.',
+            ]);
+
+        [, , $missingAppointment] = $this->createAppointment('Missing Appointment Therapist');
+        $missingAppointmentCommission = $this->createTransaction($missingAppointment)->therapistCommission;
+        $missingAppointment->delete();
+        $this->patch(route('management.commissions.mark-paid', $missingAppointmentCommission))
+            ->assertSessionHasErrors([
+                'status' => 'Settlement is blocked because the linked appointment is missing or does not match the commission.',
+            ]);
+
+        [, , $mismatchedAppointment] = $this->createAppointment('Original Assigned Therapist');
+        $mismatchedCommission = $this->createTransaction($mismatchedAppointment)->therapistCommission;
+        [, $otherTherapist] = $this->createAppointment('Replacement Assigned Therapist');
+        Appointment::withoutEvents(fn () => $mismatchedAppointment->update([
+            'therapist_profile_id' => $otherTherapist->id,
+        ]));
+        $this->patch(route('management.commissions.mark-paid', $mismatchedCommission))
+            ->assertSessionHasErrors([
+                'status' => 'Settlement is blocked because the assigned therapist is missing or does not match the commission.',
+            ]);
+
+        [, , $invalidAmountAppointment] = $this->createAppointment('Invalid Amount Therapist');
+        $invalidAmountCommission = $this->createTransaction($invalidAmountAppointment)->therapistCommission;
+        $invalidAmountCommission->update(['commission_amount' => 1]);
+        $this->patch(route('management.commissions.mark-paid', $invalidAmountCommission))
+            ->assertSessionHasErrors([
+                'status' => 'Settlement is blocked because the commission calculation is invalid.',
+            ]);
+    }
+
     /**
      * @return array{User, TherapistProfile, Appointment}
      */

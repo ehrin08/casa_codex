@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Management;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\MarkCommissionPaidRequest;
+use App\Models\Appointment;
 use App\Models\TherapistCommission;
 use App\Models\TherapistProfile;
 use App\Models\Transaction;
+use App\Services\TherapistCommissionCalculator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -59,22 +61,72 @@ class TherapistCommissionController extends Controller
     public function markPaid(
         MarkCommissionPaidRequest $request,
         TherapistCommission $commission,
+        TherapistCommissionCalculator $calculator,
     ): RedirectResponse {
-        DB::transaction(function () use ($commission): void {
+        DB::transaction(function () use ($commission, $calculator): void {
             $commission = TherapistCommission::query()
-                ->with('transaction')
                 ->lockForUpdate()
                 ->findOrFail($commission->id);
+
+            if (! $commission->transaction_id) {
+                throw ValidationException::withMessages([
+                    'status' => 'Settlement is blocked because the linked transaction no longer exists.',
+                ]);
+            }
+
+            $transaction = Transaction::query()
+                ->lockForUpdate()
+                ->find($commission->transaction_id);
+
+            if (! $transaction) {
+                throw ValidationException::withMessages([
+                    'status' => 'Settlement is blocked because the linked transaction no longer exists.',
+                ]);
+            }
+
+            if ($transaction->payment_method !== Transaction::PAYMENT_METHOD_CASH
+                || $transaction->payment_status !== Transaction::STATUS_PAID) {
+                throw ValidationException::withMessages([
+                    'status' => 'Settlement requires a paid cash transaction.',
+                ]);
+            }
+
+            $appointment = $transaction->appointment_id
+                ? Appointment::query()->lockForUpdate()->find($transaction->appointment_id)
+                : null;
+
+            if (! $appointment || $commission->appointment_id !== $appointment->id) {
+                throw ValidationException::withMessages([
+                    'status' => 'Settlement is blocked because the linked appointment is missing or does not match the commission.',
+                ]);
+            }
+
+            if ($appointment->status !== Appointment::STATUS_COMPLETED) {
+                throw ValidationException::withMessages([
+                    'status' => 'Settlement is blocked because the appointment is no longer completed.',
+                ]);
+            }
+
+            $therapistIsValid = $appointment->therapist_profile_id !== null
+                && $commission->therapist_profile_id === $appointment->therapist_profile_id
+                && TherapistProfile::query()->whereKey($appointment->therapist_profile_id)->exists();
+
+            if (! $therapistIsValid) {
+                throw ValidationException::withMessages([
+                    'status' => 'Settlement is blocked because the assigned therapist is missing or does not match the commission.',
+                ]);
+            }
+
+            if ($this->toCents($commission->commission_base_amount) !== $this->toCents($transaction->subtotal)
+                || ! $calculator->hasValidAmount($commission)) {
+                throw ValidationException::withMessages([
+                    'status' => 'Settlement is blocked because the commission calculation is invalid.',
+                ]);
+            }
 
             if ($commission->status !== TherapistCommission::STATUS_PENDING) {
                 throw ValidationException::withMessages([
                     'status' => 'Only pending commissions can be marked as paid.',
-                ]);
-            }
-
-            if ($commission->transaction?->payment_status !== Transaction::STATUS_PAID) {
-                throw ValidationException::withMessages([
-                    'status' => 'The related transaction must be paid before the commission can be settled.',
                 ]);
             }
 
@@ -87,5 +139,10 @@ class TherapistCommissionController extends Controller
         return redirect()
             ->route('management.commissions.show', $commission)
             ->with('success', 'Therapist commission marked as paid.');
+    }
+
+    private function toCents(mixed $amount): int
+    {
+        return (int) round(((float) $amount) * 100);
     }
 }

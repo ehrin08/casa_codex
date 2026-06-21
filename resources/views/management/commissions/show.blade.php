@@ -26,6 +26,7 @@
                 <p class="mt-5 text-xs leading-5 text-cocoa-500">The rate is the therapist percentage captured when this commission was first calculated. Later profile-rate changes do not alter it.</p>
             </div>
 
+            @error('status')<x-alert type="error" class="mt-7" title="Settlement blocked">{{ $message }}</x-alert>@enderror
             @if ($commission->status === \App\Models\TherapistCommission::STATUS_PENDING)
                 <form method="POST" action="{{ route('management.commissions.mark-paid', $commission) }}" class="mt-7 flex justify-end" onsubmit="return confirm('Mark this commission as paid?')">@csrf @method('PATCH')<x-button type="submit">Mark commission paid</x-button></form>
             @endif
