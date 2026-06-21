@@ -8,8 +8,11 @@ use App\Models\CustomerProfile;
 use App\Models\Service;
 use App\Models\TherapistProfile;
 use App\Services\AppointmentScheduler;
+use App\Services\AppointmentSlotFinder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class AppointmentBookingController extends Controller
@@ -50,6 +53,33 @@ class AppointmentBookingController extends Controller
         return redirect()
             ->route('customer.appointments.show', $appointment)
             ->with('success', 'Your appointment request has been submitted successfully.');
+    }
+
+    public function slots(Request $request, AppointmentSlotFinder $slotFinder): JsonResponse
+    {
+        $this->activeCustomerProfile($request);
+
+        $validated = $request->validate([
+            'service_id' => [
+                'required',
+                'integer',
+                Rule::exists('services', 'id')->where('status', 'active'),
+            ],
+            'therapist_profile_id' => [
+                'required',
+                'integer',
+                Rule::exists('therapist_profiles', 'id')->where('status', 'active'),
+            ],
+            'appointment_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
+        ]);
+
+        return response()->json([
+            'slots' => $slotFinder->availableSlots(
+                $validated['service_id'],
+                $validated['therapist_profile_id'],
+                $validated['appointment_date'],
+            ),
+        ]);
     }
 
     private function activeCustomerProfile(Request $request): CustomerProfile

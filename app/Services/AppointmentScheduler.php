@@ -63,6 +63,12 @@ class AppointmentScheduler
             );
             $end = $start->addMinutes($service->duration_minutes);
 
+            if (! $start->isFuture()) {
+                throw ValidationException::withMessages([
+                    'appointment_time' => 'The selected appointment time must be in the future.',
+                ]);
+            }
+
             if (! $this->isWithinAvailability($therapist, $start, $end)) {
                 throw ValidationException::withMessages([
                     'appointment_time' => 'The selected therapist is not available for the full appointment time.',

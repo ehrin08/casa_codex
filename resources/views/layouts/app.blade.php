@@ -39,7 +39,7 @@
                                 ['label' => 'Appointments', 'route' => 'management.appointments.index', 'active' => 'management.appointments.*', 'icon' => 'appointments'],
                                 ['label' => 'Transactions', 'route' => 'management.transactions.index', 'active' => 'management.transactions.*', 'icon' => 'transactions'],
                                 ['label' => 'Commissions', 'route' => 'management.commissions.index', 'active' => 'management.commissions.*', 'icon' => 'commissions'],
-                                ['label' => 'Reports', 'icon' => 'future', 'disabled' => true],
+                                ['label' => 'Reports', 'route' => 'management.reports.index', 'active' => 'management.reports.*', 'icon' => 'future'],
                             ],
                         ],
                         [

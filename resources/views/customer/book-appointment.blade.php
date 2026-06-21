@@ -6,7 +6,7 @@
 
 @section('content')
     <div class="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] lg:items-start">
-        <form method="POST" action="{{ route('customer.appointments.store') }}" class="spa-panel p-6 sm:p-8">
+        <form method="POST" action="{{ route('customer.appointments.store') }}" class="spa-panel p-6 sm:p-8" data-appointment-booking-form data-slots-url="{{ route('customer.appointments.slots') }}">
             @csrf
             <div class="mb-7">
                 <p class="text-xs font-bold uppercase tracking-[0.18em] text-sage-700">Appointment request</p>
@@ -17,20 +17,31 @@
             <div class="grid gap-6 sm:grid-cols-2">
                 <x-form.select name="service_id" label="Service" required wrapper-class="sm:col-span-2">
                     <option value="">Select a service</option>
-                    @foreach ($services as $service)<option value="{{ $service->id }}" @selected((string) old('service_id') === (string) $service->id)>{{ $service->name }} - {{ $service->duration_minutes }} minutes - PHP {{ number_format((float) $service->price, 2) }}</option>@endforeach
+                    @foreach ($services as $service)<option value="{{ $service->id }}" data-duration="{{ $service->duration_minutes }}" @selected((string) old('service_id') === (string) $service->id)>{{ $service->name }} - {{ $service->duration_minutes }} minutes - PHP {{ number_format((float) $service->price, 2) }}</option>@endforeach
                 </x-form.select>
                 <x-form.select name="therapist_profile_id" label="Preferred therapist" required wrapper-class="sm:col-span-2">
                     <option value="">Select a therapist</option>
                     @foreach ($therapists as $therapist)<option value="{{ $therapist->id }}" @selected((string) old('therapist_profile_id') === (string) $therapist->id)>{{ trim($therapist->first_name.' '.$therapist->last_name) }}{{ $therapist->specialty ? ' - '.$therapist->specialty : '' }}</option>@endforeach
                 </x-form.select>
                 <x-form.input name="appointment_date" label="Appointment date" type="date" :min="now()->toDateString()" required />
-                <x-form.input name="appointment_time" label="Start time" type="time" required />
+                <fieldset class="sm:col-span-2" data-slot-picker>
+                    <legend class="text-sm font-semibold text-cocoa-700">Available times <span class="text-red-700" aria-hidden="true">*</span></legend>
+                    <input type="hidden" name="appointment_time" value="{{ old('appointment_time') }}" data-selected-slot>
+                    <p class="mt-1.5 text-xs leading-5 text-cocoa-500">Choose a service, therapist, and date to see times that fit the complete service duration.</p>
+                    <div class="mt-3 rounded-2xl border border-dashed border-cream-300 bg-cream-50/70 px-5 py-6 text-center text-sm text-cocoa-600" data-slot-status role="status" aria-live="polite">Select all booking details to view available times.</div>
+                    <div class="mt-3 hidden grid-cols-2 gap-3 sm:grid-cols-3" data-slot-options></div>
+                    <div class="mt-3 hidden rounded-2xl border border-dashed border-cream-300 bg-cream-50/70 px-5 py-7 text-center" data-slot-empty>
+                        <p class="font-semibold text-cocoa-900">No available times for this date.</p>
+                        <p class="mt-1 text-sm text-cocoa-500">Please choose another date or therapist.</p>
+                    </div>
+                    @error('appointment_time')<p class="mt-2 text-sm font-medium text-red-700">{{ $message }}</p>@enderror
+                </fieldset>
                 <x-form.textarea name="notes" label="Notes (optional)" rows="4" maxlength="2000" placeholder="Share preferences or details that may help us prepare for your visit." wrapper-class="sm:col-span-2" />
             </div>
 
             <div class="mt-7 flex flex-col-reverse gap-3 border-t border-cream-200 pt-6 sm:flex-row sm:justify-end">
                 <x-button :href="route('customer.index')" variant="secondary">Cancel</x-button>
-                <x-button type="submit">Submit appointment request</x-button>
+                <x-button type="submit" data-booking-submit disabled>Submit appointment request</x-button>
             </div>
         </form>
 

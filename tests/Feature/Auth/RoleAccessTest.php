@@ -98,6 +98,7 @@ class RoleAccessTest extends TestCase
                 'management.appointments.index',
                 'management.transactions.index',
                 'management.commissions.index',
+                'management.reports.index',
             ],
             'therapist' => [
                 'therapist.schedule.index',

@@ -6,6 +6,7 @@ use App\Http\Controllers\Customer\AppointmentController as CustomerAppointmentCo
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Management\AppointmentController;
 use App\Http\Controllers\Management\CustomerProfileController;
+use App\Http\Controllers\Management\ReportController;
 use App\Http\Controllers\Management\ServiceController;
 use App\Http\Controllers\Management\TherapistAvailabilityController;
 use App\Http\Controllers\Management\TherapistCommissionController;
@@ -54,6 +55,9 @@ Route::middleware('auth')->group(function () {
         Route::patch('commissions/{commission}/mark-paid', [TherapistCommissionController::class, 'markPaid'])
             ->name('commissions.mark-paid');
 
+        Route::get('reports', [ReportController::class, 'index'])
+            ->name('reports.index');
+
         Route::patch('services/{service}/toggle-status', [ServiceController::class, 'toggleStatus'])
             ->name('services.toggle-status');
         Route::resource('services', ServiceController::class)->except(['show', 'destroy']);
@@ -85,6 +89,8 @@ Route::middleware('auth')->group(function () {
         Route::view('/', 'customer.index')->name('index');
         Route::get('book-appointment', [AppointmentBookingController::class, 'create'])
             ->name('appointments.create');
+        Route::get('appointment-slots', [AppointmentBookingController::class, 'slots'])
+            ->name('appointments.slots');
         Route::post('book-appointment', [AppointmentBookingController::class, 'store'])
             ->name('appointments.store');
         Route::get('appointments', [CustomerAppointmentController::class, 'index'])
