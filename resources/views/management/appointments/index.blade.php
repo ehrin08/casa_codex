@@ -5,7 +5,12 @@
 @section('page_description', 'Review guest bookings, therapist assignments, schedules, and appointment progress.')
 
 @section('content')
-    <div class="mb-6"><a href="{{ route('management.index') }}" class="spa-back-link"><span aria-hidden="true">&larr;</span> Management dashboard</a></div>
+    @php($walkInHasErrors = $errors->any() && old('_modal') === 'walk-in-create')
+
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <a href="{{ route('management.index') }}" class="spa-back-link"><span aria-hidden="true">&larr;</span> Management dashboard</a>
+        <x-button :href="route('management.walk-ins.create')" data-modal-open="walk-in-booking-modal">Book walk-in</x-button>
+    </div>
 
     <form method="GET" action="{{ route('management.appointments.index') }}" class="spa-panel mb-7 p-5 sm:p-6">
         <div class="mb-5 flex items-center justify-between gap-3"><div><h2 class="font-semibold text-cocoa-950">Filter appointments</h2><p class="mt-1 text-xs text-cocoa-500">Narrow the schedule by date, status, therapist, or customer.</p></div><span class="hidden rounded-full bg-sage-100 px-2.5 py-1 text-xs font-bold text-sage-700 sm:inline-flex">Schedule tools</span></div>
@@ -39,4 +44,15 @@
         </table>
     </div>
     <div class="mt-6">{{ $appointments->links() }}</div>
+
+    <x-modal id="walk-in-booking-modal" title="Book a walk-in guest" description="Create a same-day or scheduled staff appointment." size="xl" :open-on-load="$walkInHasErrors">
+        @include('management.walk-ins._form', [
+            'customers' => $walkInCustomers,
+            'services' => $walkInServices,
+            'therapists' => $walkInTherapists,
+            'isModal' => true,
+            'formIdPrefix' => 'walk-in-modal',
+            'modalKey' => 'walk-in-create',
+        ])
+    </x-modal>
 @endsection

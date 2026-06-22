@@ -8,9 +8,12 @@
     @php
         $sections = [
             ['title' => 'Appointments', 'description' => 'Review bookings and maintain status history.', 'route' => 'management.appointments.index', 'label' => 'Manage bookings'],
+            ['title' => 'Walk-in Booking', 'description' => 'Create same-day or scheduled appointments for walk-in guests.', 'route' => 'management.walk-ins.create', 'label' => 'Book walk-in'],
             ['title' => 'Transactions', 'description' => 'Record cash payments and review receipt-style transaction details.', 'route' => 'management.transactions.index', 'label' => 'Manage cash sales'],
             ['title' => 'Commissions', 'description' => 'Monitor therapist commission calculations and settle pending records.', 'route' => 'management.commissions.index', 'label' => 'Review commissions'],
             ['title' => 'Reports', 'description' => 'Review sales, service performance, and therapist commission summaries.', 'route' => 'management.reports.index', 'label' => 'View reports'],
+            ['title' => 'Customer Segments', 'description' => 'Review RFM scores and segment customers for future promotions.', 'route' => 'management.rfm.index', 'label' => 'View segments'],
+            ['title' => 'Promotion Rules', 'description' => 'Configure RFM-driven discounts and eligibility thresholds.', 'route' => 'management.promotions.index', 'label' => 'Manage rules'],
             ['title' => 'Services', 'description' => 'Maintain treatments, durations, prices, and categories.', 'route' => 'management.services.index', 'label' => 'Manage services'],
             ['title' => 'Therapists', 'description' => 'Manage therapist profiles, specialties, and staff status.', 'route' => 'management.therapists.index', 'label' => 'Manage team'],
             ['title' => 'Customers', 'description' => 'Maintain registered and walk-in guest profiles.', 'route' => 'management.customers.index', 'label' => 'Manage guests'],

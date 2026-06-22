@@ -39,8 +39,10 @@ class AppointmentVisibilityTest extends TestCase
             'customer_profile_id' => $customerOne->id,
         ]))
             ->assertOk()
-            ->assertSee($target->service_name_snapshot)
-            ->assertDontSee($other->service_name_snapshot);
+            ->assertViewHas('appointments', fn ($appointments) => $appointments
+                ->getCollection()
+                ->modelKeys() === [$target->id])
+            ->assertSee($target->service_name_snapshot);
     }
 
     public function test_therapist_schedule_only_shows_their_assigned_appointments(): void

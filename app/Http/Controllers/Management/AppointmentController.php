@@ -7,6 +7,7 @@ use App\Http\Requests\Management\UpdateAppointmentStatusRequest;
 use App\Models\Appointment;
 use App\Models\AppointmentStatusHistory;
 use App\Models\CustomerProfile;
+use App\Models\Service;
 use App\Models\TherapistProfile;
 use App\Services\AppointmentNotificationService;
 use App\Services\TherapistAssignmentRecommender;
@@ -46,8 +47,22 @@ class AppointmentController extends Controller
             ->orderBy('first_name')
             ->orderBy('last_name')
             ->get();
+        $walkInCustomers = $customers->where('is_active', true)->values();
+        $walkInServices = Service::query()
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+        $walkInTherapists = $therapists->where('status', 'active')->values();
 
-        return view('management.appointments.index', compact('appointments', 'therapists', 'customers', 'filters'));
+        return view('management.appointments.index', compact(
+            'appointments',
+            'therapists',
+            'customers',
+            'filters',
+            'walkInCustomers',
+            'walkInServices',
+            'walkInTherapists',
+        ));
     }
 
     public function show(

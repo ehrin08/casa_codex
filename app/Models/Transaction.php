@@ -84,4 +84,9 @@ class Transaction extends Model
     {
         return $this->hasMany(PromotionUsage::class);
     }
+
+    public function promotionUsage(): HasOne
+    {
+        return $this->hasOne(PromotionUsage::class);
+    }
 }

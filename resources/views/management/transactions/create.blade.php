@@ -29,8 +29,44 @@
 
                 @error('appointment_id')<x-alert type="error" class="mt-6">{{ $message }}</x-alert>@enderror
 
+                <section class="mt-7 border-b border-cream-200 pb-7">
+                    <h2 class="font-semibold text-cocoa-950">Eligible Promotions</h2>
+                    <p class="mt-1 text-sm leading-6 text-cocoa-500">Choose at most one recommendation. Eligibility and the final discount are recalculated on the server using the transaction date.</p>
+
+                    @error('promotion_id')<x-alert type="error" class="mt-4">{{ $message }}</x-alert>@enderror
+
+                    <div class="mt-4 space-y-3">
+                        <label class="flex cursor-pointer gap-3 rounded-xl border border-cream-300 bg-white p-4">
+                            <input type="radio" name="promotion_id" value="" class="mt-1" @checked(old('promotion_id', '') === '')>
+                            <span><span class="block font-semibold text-cocoa-900">No promotion</span><span class="mt-1 block text-xs leading-5 text-cocoa-500">Use the manual discount amount entered below.</span></span>
+                        </label>
+
+                        @forelse ($promotionRecommendations as $recommendation)
+                            @php
+                                $promotion = $recommendation['promotion'];
+                            @endphp
+                            <label class="flex cursor-pointer gap-3 rounded-xl border border-sage-200 bg-sage-50/60 p-4">
+                                <input type="radio" name="promotion_id" value="{{ $promotion->id }}" class="mt-1" @checked((string) old('promotion_id') === (string) $promotion->id)>
+                                <span class="min-w-0 flex-1">
+                                    <span class="flex flex-wrap items-center justify-between gap-2">
+                                        <span class="font-semibold text-cocoa-900">{{ $promotion->title }}</span>
+                                        <span class="font-bold text-sage-700">PHP {{ number_format((float) $recommendation['discount_amount'], 2) }} off</span>
+                                    </span>
+                                    <span class="mt-1 block text-xs leading-5 text-cocoa-600">{{ $recommendation['reason'] }}</span>
+                                    <span class="mt-1 block text-xs font-semibold text-cocoa-500">{{ $promotion->discount_type === \App\Models\Promotion::DISCOUNT_TYPE_PERCENTAGE ? number_format((float) $promotion->discount_value, 2).'%' : 'PHP '.number_format((float) $promotion->discount_value, 2) }} {{ $promotion->discount_type === \App\Models\Promotion::DISCOUNT_TYPE_PERCENTAGE ? 'percentage discount' : 'fixed discount' }}</span>
+                                </span>
+                            </label>
+                        @empty
+                            <div class="rounded-xl border border-dashed border-cream-300 p-4 text-sm text-cocoa-500">
+                                <p class="font-semibold text-cocoa-700">No eligible promotions</p>
+                                <p class="mt-1 text-xs leading-5">This customer and service do not currently match an active promotion rule.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </section>
+
                 <div class="mt-7 grid gap-6 sm:grid-cols-2">
-                    <x-form.input name="discount_amount" label="Discount amount (PHP)" type="number" value="0.00" min="0" :max="$subtotal" step="0.01" required hint="Cannot be negative or greater than the subtotal." />
+                    <x-form.input name="discount_amount" label="Manual discount amount (PHP)" type="number" value="0.00" min="0" :max="$subtotal" step="0.01" required hint="Used only when No promotion is selected. Promotion discounts are calculated server-side." />
                     <x-form.select name="payment_status" label="Payment status" required>
                         @foreach (\App\Models\Transaction::PAYMENT_STATUSES as $status)<option value="{{ $status }}" @selected(old('payment_status', \App\Models\Transaction::STATUS_PAID) === $status)>{{ ucfirst($status) }}</option>@endforeach
                     </x-form.select>

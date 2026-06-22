@@ -3,14 +3,21 @@
 namespace App\Services;
 
 use App\Models\Appointment;
+use App\Models\Promotion;
+use App\Models\PromotionUsage;
 use App\Models\Transaction;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class TransactionRecorder
 {
+    public function __construct(
+        private readonly PromotionEngine $promotionEngine,
+    ) {}
+
     /**
      * @param  array<string, mixed>  $data
      */
@@ -48,7 +55,36 @@ class TransactionRecorder
             }
 
             $subtotalCents = $this->toCents($subtotal);
-            $discountCents = $this->toCents($data['discount_amount'] ?? 0);
+            $transactionDate = CarbonImmutable::parse($data['transaction_date']);
+            $promotion = null;
+
+            if (($data['promotion_id'] ?? null) !== null) {
+                $promotion = Promotion::query()
+                    ->lockForUpdate()
+                    ->find($data['promotion_id']);
+
+                if (! $promotion) {
+                    throw ValidationException::withMessages([
+                        'promotion_id' => 'The selected promotion no longer exists.',
+                    ]);
+                }
+
+                $evaluation = $this->promotionEngine->evaluate(
+                    $promotion,
+                    $appointment,
+                    $transactionDate,
+                );
+
+                if (! $evaluation['eligible']) {
+                    throw ValidationException::withMessages([
+                        'promotion_id' => 'The selected promotion is not eligible: '.$evaluation['reason'],
+                    ]);
+                }
+
+                $discountCents = $evaluation['discount_cents'];
+            } else {
+                $discountCents = $this->toCents($data['discount_amount'] ?? 0);
+            }
 
             if ($discountCents < 0 || $discountCents > $subtotalCents) {
                 throw ValidationException::withMessages([
@@ -66,7 +102,7 @@ class TransactionRecorder
                 ]);
             }
 
-            return Transaction::create([
+            $transaction = Transaction::create([
                 'appointment_id' => $appointment->id,
                 'customer_profile_id' => $appointment->customer_profile_id,
                 'cashier_user_id' => $cashier->id,
@@ -79,9 +115,21 @@ class TransactionRecorder
                 'payment_status' => $data['payment_status'],
                 'paid_by_user_id' => $isPaid ? $cashier->id : null,
                 'paid_at' => $isPaid ? now() : null,
-                'transaction_date' => $data['transaction_date'],
+                'transaction_date' => $transactionDate,
                 'notes' => $data['notes'] ?? null,
             ]);
+
+            if ($promotion !== null) {
+                PromotionUsage::create([
+                    'promotion_id' => $promotion->id,
+                    'transaction_id' => $transaction->id,
+                    'customer_profile_id' => $transaction->customer_profile_id,
+                    'discount_amount' => $transaction->discount_amount,
+                    'used_at' => $transaction->transaction_date,
+                ]);
+            }
+
+            return $transaction;
         });
     }
 

@@ -7,6 +7,29 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Promotion extends Model
 {
+    public const DISCOUNT_TYPE_PERCENTAGE = 'percentage';
+
+    public const DISCOUNT_TYPE_FIXED = 'fixed';
+
+    public const DISCOUNT_TYPES = [
+        self::DISCOUNT_TYPE_PERCENTAGE,
+        self::DISCOUNT_TYPE_FIXED,
+    ];
+
+    public const STATUS_DRAFT = 'draft';
+
+    public const STATUS_ACTIVE = 'active';
+
+    public const STATUS_INACTIVE = 'inactive';
+
+    public const STATUSES = [
+        self::STATUS_DRAFT,
+        self::STATUS_ACTIVE,
+        self::STATUS_INACTIVE,
+    ];
+
+    public const RFM_SEGMENTS = CustomerRfmScore::SEGMENTS;
+
     protected $fillable = [
         'title',
         'description',

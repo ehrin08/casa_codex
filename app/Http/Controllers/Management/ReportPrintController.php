@@ -7,13 +7,13 @@ use App\Http\Requests\Management\FinancialReportRequest;
 use App\Services\ManagementFinancialReportBuilder;
 use Illuminate\View\View;
 
-class ReportController extends Controller
+class ReportPrintController extends Controller
 {
-    public function index(FinancialReportRequest $request, ManagementFinancialReportBuilder $reportBuilder): View
+    public function show(FinancialReportRequest $request, ManagementFinancialReportBuilder $reportBuilder): View
     {
         ['filters' => $filters, 'rangeLabel' => $rangeLabel, 'dateFrom' => $dateFrom, 'dateTo' => $dateTo] = $request->reportPeriod();
         $report = $reportBuilder->build($dateFrom, $dateTo);
 
-        return view('management.reports.index', compact('filters', 'rangeLabel', 'report'));
+        return view('management.reports.print', compact('filters', 'rangeLabel', 'report'));
     }
 }

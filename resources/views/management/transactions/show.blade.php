@@ -9,6 +9,7 @@
         $appointment = $transaction->appointment;
         $customer = $appointment?->customerProfile ?? $transaction->customerProfile;
         $therapist = $appointment?->therapistProfile;
+        $promotionUsage = $transaction->promotionUsage;
     @endphp
     <div class="mx-auto max-w-3xl">
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3"><a href="{{ route('management.transactions.index') }}" class="spa-back-link"><span aria-hidden="true">&larr;</span> Back to transactions</a><div class="flex flex-wrap gap-3">@if ($transaction->therapistCommission)<x-button :href="route('management.commissions.show', $transaction->therapistCommission)" variant="secondary">View commission</x-button>@endif @if ($appointment)<x-button :href="route('management.appointments.show', $appointment)" variant="secondary">View appointment</x-button>@endif</div></div>
@@ -46,6 +47,16 @@
                     <div class="flex items-end justify-between gap-4 border-t border-cream-200 pt-4"><span class="font-bold text-cocoa-900">Total amount</span><span class="text-2xl font-semibold text-cocoa-950">PHP {{ number_format((float) $transaction->total_amount, 2) }}</span></div>
                     @if ($transaction->amount_tendered !== null)<div class="flex justify-between gap-4 pt-2 text-cocoa-600"><span>Cash tendered</span><span>PHP {{ number_format((float) $transaction->amount_tendered, 2) }}</span></div><div class="flex justify-between gap-4 font-semibold text-sage-700"><span>Change due</span><span>PHP {{ number_format((float) $transaction->change_due, 2) }}</span></div>@endif
                 </div>
+
+                @if ($promotionUsage)
+                    <div class="border-b border-dashed border-cream-300 py-6">
+                        <p class="spa-detail-label">Applied promotion</p>
+                        <div class="mt-2 flex flex-wrap items-start justify-between gap-3">
+                            <div><p class="font-semibold text-cocoa-950">{{ $promotionUsage->promotion?->title ?? 'Promotion unavailable' }}</p><p class="mt-1 text-xs text-cocoa-500">Applied {{ $promotionUsage->used_at->format('F j, Y g:i A') }}</p></div>
+                            <p class="font-semibold text-sage-700">PHP {{ number_format((float) $promotionUsage->discount_amount, 2) }} discount</p>
+                        </div>
+                    </div>
+                @endif
 
                 @if ($transaction->notes)<div class="border-b border-dashed border-cream-300 py-6"><p class="spa-detail-label">Transaction notes</p><p class="mt-2 whitespace-pre-line text-sm leading-6 text-cocoa-700">{{ $transaction->notes }}</p></div>@endif
 

@@ -7,6 +7,7 @@ use App\Http\Requests\Management\MarkTransactionPaidRequest;
 use App\Http\Requests\Management\StoreTransactionRequest;
 use App\Models\Appointment;
 use App\Models\Transaction;
+use App\Services\PromotionEngine;
 use App\Services\TransactionRecorder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -33,7 +34,7 @@ class TransactionController extends Controller
         return view('management.transactions.index', compact('transactions'));
     }
 
-    public function create(Request $request): View
+    public function create(Request $request, PromotionEngine $promotionEngine): View
     {
         $eligibleAppointments = $this->eligibleAppointments()
             ->orderByDesc('appointment_date')
@@ -41,15 +42,22 @@ class TransactionController extends Controller
             ->get();
 
         $selectedAppointment = null;
+        $promotionRecommendations = [];
 
         if ($request->filled('appointment_id')) {
             $selectedAppointment = $eligibleAppointments
                 ->firstWhere('id', $request->integer('appointment_id'));
 
             abort_if(! $selectedAppointment, 404);
+
+            $promotionRecommendations = $promotionEngine->recommendationsForAppointment($selectedAppointment);
         }
 
-        return view('management.transactions.create', compact('eligibleAppointments', 'selectedAppointment'));
+        return view('management.transactions.create', compact(
+            'eligibleAppointments',
+            'selectedAppointment',
+            'promotionRecommendations',
+        ));
     }
 
     public function store(
@@ -77,6 +85,7 @@ class TransactionController extends Controller
             'cashier',
             'paidBy',
             'therapistCommission',
+            'promotionUsage.promotion',
         ]);
 
         return view('management.transactions.show', compact('transaction'));

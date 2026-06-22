@@ -27,6 +27,7 @@ class StoreTransactionRequest extends FormRequest
                 Rule::exists('appointments', 'id'),
                 Rule::unique('transactions', 'appointment_id'),
             ],
+            'promotion_id' => ['nullable', 'integer', Rule::exists('promotions', 'id')],
             'discount_amount' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
             'payment_status' => ['required', Rule::in(Transaction::PAYMENT_STATUSES)],
             'amount_tendered' => [
@@ -83,6 +84,11 @@ class StoreTransactionRequest extends FormRequest
                 }
 
                 $subtotalCents = $this->toCents($subtotal);
+
+                if ($this->filled('promotion_id')) {
+                    return;
+                }
+
                 $discountCents = $this->toCents($this->input('discount_amount', 0));
 
                 if ($discountCents > $subtotalCents) {

@@ -6,12 +6,16 @@ use App\Http\Controllers\Customer\AppointmentController as CustomerAppointmentCo
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Management\AppointmentController;
 use App\Http\Controllers\Management\CustomerProfileController;
+use App\Http\Controllers\Management\CustomerRfmController;
+use App\Http\Controllers\Management\PromotionController;
 use App\Http\Controllers\Management\ReportController;
+use App\Http\Controllers\Management\ReportPrintController;
 use App\Http\Controllers\Management\ServiceController;
 use App\Http\Controllers\Management\TherapistAvailabilityController;
 use App\Http\Controllers\Management\TherapistCommissionController;
 use App\Http\Controllers\Management\TherapistProfileController;
 use App\Http\Controllers\Management\TransactionController;
+use App\Http\Controllers\Management\WalkInAppointmentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Therapist\CommissionController as TherapistCommissionViewController;
 use App\Http\Controllers\Therapist\ScheduleController;
@@ -43,6 +47,13 @@ Route::middleware('auth')->group(function () {
         Route::patch('appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])
             ->name('appointments.update-status');
 
+        Route::get('walk-ins/book', [WalkInAppointmentController::class, 'create'])
+            ->name('walk-ins.create');
+        Route::get('walk-ins/slots', [WalkInAppointmentController::class, 'slots'])
+            ->name('walk-ins.slots');
+        Route::post('walk-ins/book', [WalkInAppointmentController::class, 'store'])
+            ->name('walk-ins.store');
+
         Route::resource('transactions', TransactionController::class)
             ->only(['index', 'create', 'store', 'show']);
         Route::patch('transactions/{transaction}/mark-paid', [TransactionController::class, 'markPaid'])
@@ -57,6 +68,17 @@ Route::middleware('auth')->group(function () {
 
         Route::get('reports', [ReportController::class, 'index'])
             ->name('reports.index');
+        Route::get('reports/print', [ReportPrintController::class, 'show'])
+            ->name('reports.print');
+
+        Route::get('rfm-scores', [CustomerRfmController::class, 'index'])
+            ->name('rfm.index');
+        Route::post('rfm-scores/recalculate', [CustomerRfmController::class, 'recalculate'])
+            ->name('rfm.recalculate');
+
+        Route::patch('promotions/{promotion}/toggle-status', [PromotionController::class, 'toggleStatus'])
+            ->name('promotions.toggle-status');
+        Route::resource('promotions', PromotionController::class)->except(['show', 'destroy']);
 
         Route::patch('services/{service}/toggle-status', [ServiceController::class, 'toggleStatus'])
             ->name('services.toggle-status');

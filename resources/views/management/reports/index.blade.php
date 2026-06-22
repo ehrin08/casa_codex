@@ -44,7 +44,7 @@
             <x-form.input name="date_from" label="From date" type="date" :value="$filters['date_from']" />
             <x-form.input name="date_to" label="To date" type="date" :value="$filters['date_to']" />
         </div>
-        <div class="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><x-button :href="route('management.reports.index')" variant="secondary">Reset to today</x-button><x-button type="submit">Apply report period</x-button></div>
+        <div class="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><x-button :href="route('management.reports.index')" variant="secondary">Reset to today</x-button><x-button :href="route('management.reports.print', $filters)" variant="secondary">Print / Save as PDF</x-button><x-button type="submit">Apply report period</x-button></div>
     </form>
 
     <section>
