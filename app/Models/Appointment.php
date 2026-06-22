@@ -78,6 +78,11 @@ class Appointment extends Model
         return $this->hasOne(TherapistCommission::class);
     }
 
+    public function review(): HasOne
+    {
+        return $this->hasOne(CustomerReview::class);
+    }
+
     public function statusHistories(): HasMany
     {
         return $this->hasMany(AppointmentStatusHistory::class);

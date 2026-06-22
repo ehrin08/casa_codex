@@ -7,6 +7,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CustomerReview extends Model
 {
+    public const SENTIMENT_POSITIVE = 'positive';
+
+    public const SENTIMENT_NEUTRAL = 'neutral';
+
+    public const SENTIMENT_NEGATIVE = 'negative';
+
+    public const SENTIMENTS = [
+        self::SENTIMENT_POSITIVE,
+        self::SENTIMENT_NEUTRAL,
+        self::SENTIMENT_NEGATIVE,
+    ];
+
     protected $fillable = [
         'customer_profile_id',
         'appointment_id',

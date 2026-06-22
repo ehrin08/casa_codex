@@ -40,6 +40,8 @@
                                 ['label' => 'Transactions', 'route' => 'management.transactions.index', 'active' => 'management.transactions.*', 'icon' => 'transactions'],
                                 ['label' => 'Commissions', 'route' => 'management.commissions.index', 'active' => 'management.commissions.*', 'icon' => 'commissions'],
                                 ['label' => 'Reports', 'route' => 'management.reports.index', 'active' => 'management.reports.*', 'icon' => 'future'],
+                                ['label' => 'Analytics', 'route' => 'management.analytics.index', 'active' => 'management.analytics.*', 'icon' => 'future'],
+                                ['label' => 'Reviews', 'route' => 'management.reviews.index', 'active' => 'management.reviews.*', 'icon' => 'future'],
                             ],
                         ],
                         [
@@ -86,7 +88,6 @@
                             'links' => [
                                 ['label' => 'Notifications', 'route' => 'notifications.index', 'active' => 'notifications.*', 'icon' => 'notifications'],
                                 ['label' => 'Promotions', 'icon' => 'future', 'disabled' => true],
-                                ['label' => 'Reviews', 'icon' => 'future', 'disabled' => true],
                             ],
                         ],
                     ];

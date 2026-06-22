@@ -37,7 +37,7 @@ class AppointmentController extends Controller
 
         abort_unless($appointment->customer_profile_id === $customerProfile->id, 404);
 
-        $appointment->load(['service', 'therapistProfile']);
+        $appointment->load(['service', 'therapistProfile', 'review']);
 
         return view('customer.appointments.show', compact('appointment'));
     }

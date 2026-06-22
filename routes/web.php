@@ -3,9 +3,12 @@
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Customer\AppointmentBookingController;
 use App\Http\Controllers\Customer\AppointmentController as CustomerAppointmentController;
+use App\Http\Controllers\Customer\AppointmentReviewController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Management\AnalyticsController;
 use App\Http\Controllers\Management\AppointmentController;
 use App\Http\Controllers\Management\CustomerProfileController;
+use App\Http\Controllers\Management\CustomerReviewController;
 use App\Http\Controllers\Management\CustomerRfmController;
 use App\Http\Controllers\Management\PromotionController;
 use App\Http\Controllers\Management\ReportController;
@@ -39,6 +42,9 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('management')->name('management.')->middleware('role:management')->group(function () {
         Route::view('/', 'management.index')->name('index');
+
+        Route::get('analytics', [AnalyticsController::class, 'index'])
+            ->name('analytics.index');
 
         Route::get('appointments', [AppointmentController::class, 'index'])
             ->name('appointments.index');
@@ -75,6 +81,11 @@ Route::middleware('auth')->group(function () {
             ->name('rfm.index');
         Route::post('rfm-scores/recalculate', [CustomerRfmController::class, 'recalculate'])
             ->name('rfm.recalculate');
+
+        Route::get('reviews', [CustomerReviewController::class, 'index'])
+            ->name('reviews.index');
+        Route::get('reviews/{review}', [CustomerReviewController::class, 'show'])
+            ->name('reviews.show');
 
         Route::patch('promotions/{promotion}/toggle-status', [PromotionController::class, 'toggleStatus'])
             ->name('promotions.toggle-status');
@@ -117,6 +128,10 @@ Route::middleware('auth')->group(function () {
             ->name('appointments.store');
         Route::get('appointments', [CustomerAppointmentController::class, 'index'])
             ->name('appointments.index');
+        Route::get('appointments/{appointment}/review', [AppointmentReviewController::class, 'create'])
+            ->name('appointments.review.create');
+        Route::post('appointments/{appointment}/review', [AppointmentReviewController::class, 'store'])
+            ->name('appointments.review.store');
         Route::get('appointments/{appointment}', [CustomerAppointmentController::class, 'show'])
             ->name('appointments.show');
     });

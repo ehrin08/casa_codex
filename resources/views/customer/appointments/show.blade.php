@@ -27,6 +27,22 @@
                     @if ($appointment->notes)<div class="sm:col-span-2"><dt class="spa-detail-label">Notes</dt><dd class="mt-1.5 whitespace-pre-line leading-6 text-cocoa-800">{{ $appointment->notes }}</dd></div>@endif
                 </dl>
 
+                @if ($appointment->review)
+                    <section class="mt-8 rounded-2xl border border-sage-200 bg-sage-50 p-5 sm:p-6">
+                        <div class="flex flex-wrap items-start justify-between gap-4">
+                            <div><p class="spa-detail-label">Your review</p><p class="mt-2 text-xl font-semibold text-cocoa-950">{{ $appointment->review->rating }} / 5</p></div>
+                            <x-status-badge :status="$appointment->review->sentiment_label" />
+                        </div>
+                        <p class="mt-4 text-sm leading-6 text-cocoa-700">{{ $appointment->review->comment ? \Illuminate\Support\Str::limit($appointment->review->comment, 240) : 'No comment was provided.' }}</p>
+                        <p class="mt-3 text-xs text-cocoa-500">Reviewed {{ $appointment->review->reviewed_at->format('F j, Y') }}</p>
+                    </section>
+                @elseif ($appointment->status === \App\Models\Appointment::STATUS_COMPLETED && auth()->user()->customerProfile?->is_active)
+                    <section class="mt-8 flex flex-col gap-4 rounded-2xl border border-gold-300/50 bg-cream-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+                        <div><h3 class="font-semibold text-cocoa-950">How was your visit?</h3><p class="mt-1 text-sm leading-6 text-cocoa-600">Your feedback helps management track service quality.</p></div>
+                        <x-button :href="route('customer.appointments.review.create', $appointment)">Write review</x-button>
+                    </section>
+                @endif
+
                 <div class="mt-8 flex flex-col gap-3 border-t border-cream-200 pt-6 sm:flex-row"><x-button :href="route('customer.appointments.create')">Book another appointment</x-button><x-button :href="route('customer.index')" variant="secondary">Return to dashboard</x-button></div>
             </div>
         </article>
