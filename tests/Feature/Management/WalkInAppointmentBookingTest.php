@@ -42,7 +42,7 @@ class WalkInAppointmentBookingTest extends TestCase
 
         $this->get(route('management.index'))
             ->assertOk()
-            ->assertSee('Walk-in Booking')
+            ->assertSee('Book Walk-in')
             ->assertSee(route('management.walk-ins.create'));
 
         $this->get(route('management.appointments.index'))

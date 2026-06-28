@@ -15,15 +15,15 @@
             </div>
 
             <div class="grid gap-6 sm:grid-cols-2">
-                <x-form.select name="service_id" label="Service" required wrapper-class="sm:col-span-2">
+                <x-form.select name="service_id" label="Service" required wrapper-class="sm:col-span-2" hint="Select a service to see its duration and price.">
                     <option value="">Select a service</option>
                     @foreach ($services as $service)<option value="{{ $service->id }}" data-duration="{{ $service->duration_minutes }}" @selected((string) old('service_id') === (string) $service->id)>{{ $service->name }} - {{ $service->duration_minutes }} minutes - PHP {{ number_format((float) $service->price, 2) }}</option>@endforeach
                 </x-form.select>
-                <x-form.select name="therapist_profile_id" label="Preferred therapist" required wrapper-class="sm:col-span-2">
+                <x-form.select name="therapist_profile_id" label="Preferred therapist" required wrapper-class="sm:col-span-2" hint="Select a specific therapist for your visit.">
                     <option value="">Select a therapist</option>
                     @foreach ($therapists as $therapist)<option value="{{ $therapist->id }}" @selected((string) old('therapist_profile_id') === (string) $therapist->id)>{{ trim($therapist->first_name.' '.$therapist->last_name) }}{{ $therapist->specialty ? ' - '.$therapist->specialty : '' }}</option>@endforeach
                 </x-form.select>
-                <x-form.input name="appointment_date" label="Appointment date" type="date" :min="now()->toDateString()" required />
+                <x-form.input name="appointment_date" label="Appointment date" type="date" :min="now()->toDateString()" required hint="Choose a date to see available times." />
                 <fieldset class="sm:col-span-2" data-slot-picker>
                     <legend class="text-sm font-semibold text-cocoa-700">Available times <span class="text-red-700" aria-hidden="true">*</span></legend>
                     <input type="hidden" name="appointment_time" value="{{ old('appointment_time') }}" data-selected-slot>

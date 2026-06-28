@@ -10,6 +10,7 @@ use App\Http\Controllers\Management\AppointmentController;
 use App\Http\Controllers\Management\CustomerProfileController;
 use App\Http\Controllers\Management\CustomerReviewController;
 use App\Http\Controllers\Management\CustomerRfmController;
+use App\Http\Controllers\Management\DashboardController as ManagementDashboardController;
 use App\Http\Controllers\Management\PromotionController;
 use App\Http\Controllers\Management\ReportController;
 use App\Http\Controllers\Management\ReportPrintController;
@@ -39,7 +40,7 @@ Route::middleware('auth')->group(function () {
         ->name('notifications.read');
 
     Route::prefix('management')->name('management.')->middleware('role:management')->group(function () {
-        Route::view('/', 'management.index')->name('index');
+        Route::get('/', [ManagementDashboardController::class, 'index'])->name('index');
 
         Route::get('analytics', [AnalyticsController::class, 'index'])
             ->name('analytics.index');

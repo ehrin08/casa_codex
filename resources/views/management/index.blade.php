@@ -2,77 +2,133 @@
 
 @section('title', 'Management Dashboard | Casa Paraiso')
 @section('page_title', 'Management Dashboard')
-@section('page_description', 'A clear view of Casa Paraiso appointments, services, people, and daily availability.')
+@section('page_description', 'A clear view of Casa Paraiso business operations and daily status.')
 
 @section('content')
-    @php
-        $dashboardSections = [
-            [
-                'heading' => 'Daily Operations',
-                'cards' => [
-                    ['title' => 'Walk-in Booking', 'description' => 'Create same-day or scheduled appointments for walk-in guests.', 'route' => 'management.walk-ins.create', 'label' => 'Book walk-in'],
-                    ['title' => 'Appointments', 'description' => 'Review, update, and manage customer appointments.', 'route' => 'management.appointments.index', 'label' => 'View appointments'],
-                    ['title' => 'Availability', 'description' => 'Set recurring and date-specific working windows.', 'route' => 'management.availability.index', 'label' => 'Manage schedule'],
-                    ['title' => 'Notifications', 'description' => 'Stay current on new requests and appointment activity.', 'route' => 'notifications.index', 'label' => 'View updates'],
-                ],
-            ],
-            [
-                'heading' => 'Payments & Reports',
-                'cards' => [
-                    ['title' => 'Transactions', 'description' => 'Record and manage customer payments.', 'route' => 'management.transactions.index', 'label' => 'View transactions'],
-                    ['title' => 'Commissions', 'description' => 'Monitor therapist commission calculations and settle pending records.', 'route' => 'management.commissions.index', 'label' => 'Review commissions'],
-                    ['title' => 'Reports', 'description' => 'Review financial summaries and print-ready reports.', 'route' => 'management.reports.index', 'label' => 'View reports'],
-                ],
-            ],
-            [
-                'heading' => 'Customer Insights',
-                'cards' => [
-                    ['title' => 'Analytics', 'description' => 'Review revenue trends, booking patterns, customer segments, and promotion performance.', 'route' => 'management.analytics.index', 'label' => 'View analytics'],
-                    ['title' => 'RFM Scores', 'description' => 'Review customer value segments and retention indicators.', 'route' => 'management.rfm.index', 'label' => 'View RFM scores'],
-                    ['title' => 'Reviews & Sentiment', 'description' => 'Review customer feedback, ratings, and sentiment trends.', 'route' => 'management.reviews.index', 'label' => 'View feedback'],
-                    ['title' => 'Customers', 'description' => 'Maintain registered and walk-in guest profiles.', 'route' => 'management.customers.index', 'label' => 'Manage guests'],
-                ],
-            ],
-            [
-                'heading' => 'Marketing & Promotions',
-                'cards' => [
-                    ['title' => 'Promotions', 'description' => 'Manage customer promotions and eligibility rules.', 'route' => 'management.promotions.index', 'label' => 'Manage promotions'],
-                ],
-            ],
-            [
-                'heading' => 'System Records',
-                'cards' => [
-                    ['title' => 'Services', 'description' => 'Maintain treatments, durations, prices, and categories.', 'route' => 'management.services.index', 'label' => 'Manage services'],
-                    ['title' => 'Therapists', 'description' => 'Manage therapist profiles, specialties, and staff status.', 'route' => 'management.therapists.index', 'label' => 'Manage team'],
-                ],
-            ],
-        ];
-
-        $cardIndex = 0;
-    @endphp
-
     <div class="mb-8 flex flex-col gap-4 rounded-2xl bg-cocoa-800 p-6 text-cream-50 sm:flex-row sm:items-center sm:justify-between sm:p-8">
         <div>
-            <p class="text-xs font-bold uppercase tracking-[0.18em] text-sage-200">Operations overview</p>
+            <p class="text-xs font-bold uppercase tracking-[0.18em] text-sage-200">Business overview</p>
             <h2 class="mt-2 text-2xl font-semibold">Welcome, {{ auth()->user()->name }}</h2>
-            <p class="mt-2 text-sm leading-6 text-cream-200">Everything your team needs to keep the spa day flowing smoothly.</p>
+            <p class="mt-2 text-sm leading-6 text-cream-200">Here's what is happening at the spa today.</p>
         </div>
-        <x-button :href="route('management.walk-ins.create')" variant="light">Book walk-in</x-button>
+        <div class="flex flex-wrap gap-3">
+            <x-button :href="route('management.walk-ins.create')" variant="light">Book Walk-in</x-button>
+        </div>
     </div>
 
-    @foreach ($dashboardSections as $section)
-        <div class="mb-8">
-            <h3 class="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-cocoa-500">{{ $section['heading'] }}</h3>
-            <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                @foreach ($section['cards'] as $card)
-                    <a href="{{ route($card['route']) }}" class="spa-panel group relative overflow-hidden p-6 transition hover:-translate-y-0.5 hover:border-sage-200 hover:shadow-lg">
-                        <span class="flex size-10 items-center justify-center rounded-xl bg-sage-100 text-sm font-black text-sage-700">{{ str_pad(++$cardIndex, 2, '0', STR_PAD_LEFT) }}</span>
-                        <h2 class="mt-5 text-lg font-semibold text-cocoa-950">{{ $card['title'] }}</h2>
-                        <p class="mt-2 text-sm leading-6 text-cocoa-500">{{ $card['description'] }}</p>
-                        <p class="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-sage-700">{{ $card['label'] }} <span aria-hidden="true">&rarr;</span></p>
-                    </a>
-                @endforeach
+    {{-- Business Summary KPI Cards --}}
+    <div class="mb-8">
+        <h3 class="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-cocoa-500">Business Summary</h3>
+        <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="spa-panel p-6">
+                <p class="text-xs font-bold uppercase tracking-[0.14em] text-sage-700">Today’s Appointments</p>
+                <p class="mt-2 text-3xl font-semibold text-cocoa-950">{{ $todayAppointments }}</p>
+                <a href="{{ route('management.appointments.index') }}" class="mt-4 block text-sm font-medium text-sage-700 hover:text-sage-900">View appointments &rarr;</a>
+            </div>
+
+            <div class="spa-panel p-6">
+                <p class="text-xs font-bold uppercase tracking-[0.14em] text-sage-700">Today’s Paid Revenue</p>
+                <p class="mt-2 text-3xl font-semibold text-cocoa-950">${{ number_format($todayPaidRevenue, 2) }}</p>
+                <a href="{{ route('management.transactions.index') }}" class="mt-4 block text-sm font-medium text-sage-700 hover:text-sage-900">View transactions &rarr;</a>
+            </div>
+
+            <div class="spa-panel p-6">
+                <p class="text-xs font-bold uppercase tracking-[0.14em] text-sage-700">Pending Payments</p>
+                <p class="mt-2 text-3xl font-semibold text-cocoa-950">{{ $pendingPayments }}</p>
+                <a href="{{ route('management.transactions.index') }}" class="mt-4 block text-sm font-medium text-sage-700 hover:text-sage-900">Record payment &rarr;</a>
+            </div>
+
+            <div class="spa-panel p-6">
+                <p class="text-xs font-bold uppercase tracking-[0.14em] text-sage-700">Therapist Workload</p>
+                <p class="mt-2 text-3xl font-semibold text-cocoa-950">{{ $therapistsWorking }} <span class="text-sm font-normal text-cocoa-500">Active Today</span></p>
+                <a href="{{ route('management.availability.index') }}" class="mt-4 block text-sm font-medium text-sage-700 hover:text-sage-900">View availability &rarr;</a>
             </div>
         </div>
-    @endforeach
+    </div>
+
+    {{-- Primary Staff Actions --}}
+    <div class="mb-8">
+        <h3 class="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-cocoa-500">Primary Actions</h3>
+        <div class="flex flex-wrap gap-4">
+            <x-button :href="route('management.walk-ins.create')">Book Walk-in</x-button>
+            <x-button :href="route('management.appointments.index')" variant="secondary">Today’s Appointments</x-button>
+            <x-button :href="route('management.transactions.index')" variant="secondary">Record Payment</x-button>
+            <x-button :href="route('management.reports.index')" variant="secondary">Print Reports</x-button>
+        </div>
+    </div>
+
+    <div class="grid gap-8 lg:grid-cols-2">
+        {{-- Attention Needed --}}
+        <div>
+            <h3 class="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-cocoa-500">Attention Needed</h3>
+            <div class="spa-panel divide-y divide-cocoa-100 overflow-hidden">
+                @forelse($attentionNeeded as $issue)
+                    <div class="flex items-center justify-between p-5">
+                        <div class="flex items-center gap-3">
+                            @if($issue['type'] === 'negative_review')
+                                <span class="flex size-8 items-center justify-center rounded-full bg-red-100 text-red-600">
+                                    <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                </span>
+                            @else
+                                <span class="flex size-8 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+                                    <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                </span>
+                            @endif
+                            <p class="text-sm font-medium text-cocoa-950">{{ $issue['message'] }}</p>
+                        </div>
+                        <a href="{{ route($issue['route'], $issue['route_params']) }}" class="text-sm font-semibold text-sage-700 hover:text-sage-900">{{ $issue['label'] }}</a>
+                    </div>
+                @empty
+                    <div class="p-8 text-center">
+                        <span class="mx-auto flex size-12 items-center justify-center rounded-full bg-green-50 text-green-600 mb-3">
+                            <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        </span>
+                        <p class="text-sm font-medium text-cocoa-900">No urgent items need attention right now.</p>
+                        <p class="text-sm text-cocoa-500 mt-1">Everything is running smoothly.</p>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+
+        {{-- Business Insights Snapshot --}}
+        <div>
+            <h3 class="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-cocoa-500">Business Insights</h3>
+            <div class="spa-panel p-6">
+                @if($insights['most_booked_service'])
+                    <div class="mb-6">
+                        <p class="text-xs font-bold uppercase tracking-[0.14em] text-sage-700">Most Booked Service Today</p>
+                        <p class="mt-2 text-lg font-semibold text-cocoa-950">{{ $insights['most_booked_service'] }}</p>
+                        <p class="text-sm text-cocoa-500">{{ $insights['most_booked_count'] }} bookings</p>
+                    </div>
+                @else
+                    <div class="mb-6">
+                        <p class="text-xs font-bold uppercase tracking-[0.14em] text-sage-700">Most Booked Service Today</p>
+                        <p class="mt-2 text-sm text-cocoa-500">No services booked yet today.</p>
+                    </div>
+                @endif
+                <div class="mt-4 pt-4 border-t border-cocoa-100">
+                    <a href="{{ route('management.analytics.index') }}" class="text-sm font-medium text-sage-700 hover:text-sage-900">View full analytics &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Secondary Management Links --}}
+    <div class="mt-8">
+        <h3 class="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-cocoa-500">Manage Records</h3>
+        <div class="spa-panel p-4">
+            <div class="flex flex-wrap gap-x-6 gap-y-3">
+                <a href="{{ route('management.services.index') }}" class="text-sm font-medium text-cocoa-600 hover:text-cocoa-900">Services</a>
+                <a href="{{ route('management.therapists.index') }}" class="text-sm font-medium text-cocoa-600 hover:text-cocoa-900">Therapists</a>
+                <a href="{{ route('management.customers.index') }}" class="text-sm font-medium text-cocoa-600 hover:text-cocoa-900">Customers</a>
+                <a href="{{ route('management.availability.index') }}" class="text-sm font-medium text-cocoa-600 hover:text-cocoa-900">Therapist Workload</a>
+                <a href="{{ route('management.promotions.index') }}" class="text-sm font-medium text-cocoa-600 hover:text-cocoa-900">Promotions</a>
+                <a href="{{ route('management.rfm.index') }}" class="text-sm font-medium text-cocoa-600 hover:text-cocoa-900">RFM Scores</a>
+                <a href="{{ route('management.reviews.index') }}" class="text-sm font-medium text-cocoa-600 hover:text-cocoa-900">Reviews & Sentiment</a>
+                <a href="{{ route('management.analytics.index') }}" class="text-sm font-medium text-cocoa-600 hover:text-cocoa-900">Analytics</a>
+                <a href="{{ route('management.reports.index') }}" class="text-sm font-medium text-cocoa-600 hover:text-cocoa-900">Reports</a>
+                <a href="{{ route('management.commissions.index') }}" class="text-sm font-medium text-cocoa-600 hover:text-cocoa-900">Commissions</a>
+            </div>
+        </div>
+    </div>
 @endsection

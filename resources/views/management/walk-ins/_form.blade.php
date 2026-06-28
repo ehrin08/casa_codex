@@ -34,21 +34,21 @@
             <a href="{{ route('management.customers.create') }}" class="text-sm font-semibold text-sage-700 underline decoration-sage-300 underline-offset-4 hover:text-sage-900">Create a customer profile for a new walk-in guest</a>
         </div>
 
-        <x-form.select :id="$formIdPrefix.'-service'" name="service_id" label="Service" required wrapper-class="sm:col-span-2">
+        <x-form.select :id="$formIdPrefix.'-service'" name="service_id" label="Service" required wrapper-class="sm:col-span-2" hint="Select a spa service to determine the required appointment duration.">
             <option value="">Select a service</option>
             @foreach ($services as $service)
                 <option value="{{ $service->id }}" data-duration="{{ $service->duration_minutes }}" @selected((string) old('service_id') === (string) $service->id)>{{ $service->name }} - {{ $service->duration_minutes }} minutes - PHP {{ number_format((float) $service->price, 2) }}</option>
             @endforeach
         </x-form.select>
 
-        <x-form.select :id="$formIdPrefix.'-therapist'" name="therapist_profile_id" label="Therapist" required wrapper-class="sm:col-span-2">
+        <x-form.select :id="$formIdPrefix.'-therapist'" name="therapist_profile_id" label="Therapist" required wrapper-class="sm:col-span-2" hint="Choose a specific therapist.">
             <option value="">Select a therapist</option>
             @foreach ($therapists as $therapist)
                 <option value="{{ $therapist->id }}" @selected((string) old('therapist_profile_id') === (string) $therapist->id)>{{ trim($therapist->first_name.' '.$therapist->last_name) }}{{ $therapist->specialty ? ' - '.$therapist->specialty : '' }}</option>
             @endforeach
         </x-form.select>
 
-        <x-form.input :id="$formIdPrefix.'-date'" name="appointment_date" label="Appointment date" type="date" :min="now()->toDateString()" required />
+        <x-form.input :id="$formIdPrefix.'-date'" name="appointment_date" label="Appointment date" type="date" :min="now()->toDateString()" required hint="Defaults to today for walk-ins, but future dates can also be scheduled." />
 
         <fieldset class="sm:col-span-2" data-slot-picker>
             <legend class="text-sm font-semibold text-cocoa-700">Available times <span class="text-red-700" aria-hidden="true">*</span></legend>

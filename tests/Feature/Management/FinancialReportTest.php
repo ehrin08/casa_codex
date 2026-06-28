@@ -36,8 +36,7 @@ class FinancialReportTest extends TestCase
 
         $this->get(route('management.index'))
             ->assertOk()
-            ->assertSee('href="'.route('management.reports.index').'"', false)
-            ->assertSee('Review financial summaries and print-ready reports.');
+            ->assertSee('href="'.route('management.reports.index').'"', false);
     }
 
     public function test_daily_report_calculates_paid_sales_counts_and_service_performance(): void

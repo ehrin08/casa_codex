@@ -21,119 +21,70 @@ class ManagementDashboardNavigationTest extends TestCase
             ->assertOk();
     }
 
-    public function test_dashboard_displays_grouped_section_headings(): void
+    public function test_dashboard_displays_business_summary_kpi_labels(): void
     {
         $manager = $this->createUserWithRole('management');
 
         $response = $this->actingAs($manager)->get(route('management.index'));
 
         $response->assertOk();
-        $response->assertSeeInOrder([
-            'Daily Operations',
-            'Payments & Reports',
-            'Customer Insights',
-            'Marketing & Promotions',
-            'System Records',
-        ]);
+        $response->assertSee('Today’s Appointments');
+        $response->assertSee('Today’s Paid Revenue');
+        $response->assertSee('Pending Payments');
+        $response->assertSee('Therapist Workload');
     }
 
-    public function test_dashboard_shows_walk_in_booking_card(): void
+    public function test_dashboard_shows_primary_staff_actions(): void
     {
         $manager = $this->createUserWithRole('management');
 
         $response = $this->actingAs($manager)->get(route('management.index'));
 
         $response->assertOk();
-        $response->assertSee('Walk-in Booking');
-        $response->assertSee('Book walk-in');
+        $response->assertSee('Book Walk-in');
+        $response->assertSee('Today’s Appointments');
+        $response->assertSee('Record Payment');
+        $response->assertSee('Print Reports');
     }
 
-    public function test_dashboard_shows_appointments_card(): void
+    public function test_dashboard_displays_attention_needed_section(): void
     {
         $manager = $this->createUserWithRole('management');
 
         $response = $this->actingAs($manager)->get(route('management.index'));
 
         $response->assertOk();
-        $response->assertSee('Appointments');
-        $response->assertSee('View appointments');
+        $response->assertSee('Attention Needed');
     }
 
-    public function test_dashboard_shows_analytics_card(): void
+    public function test_dashboard_displays_business_insights_section(): void
     {
         $manager = $this->createUserWithRole('management');
 
         $response = $this->actingAs($manager)->get(route('management.index'));
 
         $response->assertOk();
-        $response->assertSee('Analytics');
-        $response->assertSee('View analytics');
+        $response->assertSee('Business Insights');
     }
 
-    public function test_dashboard_shows_reviews_and_sentiment_card(): void
+    public function test_dashboard_displays_secondary_management_links(): void
     {
         $manager = $this->createUserWithRole('management');
 
         $response = $this->actingAs($manager)->get(route('management.index'));
 
         $response->assertOk();
-        $response->assertSee('Reviews & Sentiment');
-        $response->assertSee('View feedback');
-    }
-
-    public function test_dashboard_shows_transactions_card(): void
-    {
-        $manager = $this->createUserWithRole('management');
-
-        $response = $this->actingAs($manager)->get(route('management.index'));
-
-        $response->assertOk();
-        $response->assertSee('Transactions');
-        $response->assertSee('View transactions');
-    }
-
-    public function test_dashboard_shows_reports_card(): void
-    {
-        $manager = $this->createUserWithRole('management');
-
-        $response = $this->actingAs($manager)->get(route('management.index'));
-
-        $response->assertOk();
-        $response->assertSee('Reports');
-        $response->assertSee('View reports');
-    }
-
-    public function test_dashboard_shows_promotions_card(): void
-    {
-        $manager = $this->createUserWithRole('management');
-
-        $response = $this->actingAs($manager)->get(route('management.index'));
-
-        $response->assertOk();
+        $response->assertSee('Manage Records');
+        $response->assertSee('Services');
+        $response->assertSee('Therapists');
+        $response->assertSee('Customers');
+        $response->assertSee('Therapist Workload');
         $response->assertSee('Promotions');
-        $response->assertSee('Manage promotions');
-    }
-
-    public function test_dashboard_shows_rfm_scores_card(): void
-    {
-        $manager = $this->createUserWithRole('management');
-
-        $response = $this->actingAs($manager)->get(route('management.index'));
-
-        $response->assertOk();
         $response->assertSee('RFM Scores');
-        $response->assertSee('View RFM scores');
-    }
-
-    public function test_sidebar_contains_walk_in_booking_link(): void
-    {
-        $manager = $this->createUserWithRole('management');
-
-        $response = $this->actingAs($manager)->get(route('management.index'));
-
-        $response->assertOk();
-        $response->assertSee(route('management.walk-ins.create'));
-        $response->assertSee('Walk-in Booking');
+        $response->assertSee('Reviews & Sentiment');
+        $response->assertSee('Analytics');
+        $response->assertSee('Reports');
+        $response->assertSee('Commissions');
     }
 
     public function test_customer_user_cannot_access_management_dashboard(): void
@@ -177,7 +128,6 @@ class ManagementDashboardNavigationTest extends TestCase
             'management.services.index',
             'management.therapists.index',
             'management.customers.index',
-            'notifications.index',
         ];
 
         foreach ($requiredRoutes as $routeName) {

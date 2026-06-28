@@ -39,8 +39,7 @@ class CustomerReviewManagementTest extends TestCase
 
         $this->get(route('management.index'))
             ->assertOk()
-            ->assertSee('href="'.route('management.reviews.index').'"', false)
-            ->assertSee('Review customer feedback, ratings, and sentiment trends.');
+            ->assertSee('href="'.route('management.reviews.index').'"', false);
     }
 
     public function test_management_can_view_review_detail(): void

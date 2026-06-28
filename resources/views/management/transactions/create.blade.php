@@ -67,7 +67,7 @@
 
                 <div class="mt-7 grid gap-6 sm:grid-cols-2">
                     <x-form.input name="discount_amount" label="Manual discount amount (PHP)" type="number" value="0.00" min="0" :max="$subtotal" step="0.01" required hint="Used only when No promotion is selected. Promotion discounts are calculated server-side." />
-                    <x-form.select name="payment_status" label="Payment status" required>
+                    <x-form.select name="payment_status" label="Payment status" required hint="Paid means money was received. Pending awaits payment. Void cancels the record.">
                         @foreach (\App\Models\Transaction::PAYMENT_STATUSES as $status)<option value="{{ $status }}" @selected(old('payment_status', \App\Models\Transaction::STATUS_PAID) === $status)>{{ ucfirst($status) }}</option>@endforeach
                     </x-form.select>
                     <x-form.input name="amount_tendered" label="Cash tendered (PHP)" type="number" :value="$subtotal" min="0" step="0.01" hint="Required for paid transactions. Leave blank for pending or void." />

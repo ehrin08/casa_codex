@@ -27,9 +27,9 @@
                         [
                             'title' => 'Daily Operations',
                             'links' => [
-                                ['label' => 'Walk-in Booking', 'route' => 'management.walk-ins.create', 'active' => 'management.walk-ins.*', 'icon' => 'booking'],
+                                ['label' => 'Book Walk-in', 'route' => 'management.walk-ins.create', 'active' => 'management.walk-ins.*', 'icon' => 'booking'],
                                 ['label' => 'Appointments', 'route' => 'management.appointments.index', 'active' => 'management.appointments.*', 'icon' => 'appointments'],
-                                ['label' => 'Availability', 'route' => 'management.availability.index', 'active' => 'management.availability.*', 'icon' => 'availability'],
+                                ['label' => 'Therapist Workload', 'route' => 'management.availability.index', 'active' => 'management.availability.*', 'icon' => 'availability'],
                             ],
                         ],
                         [

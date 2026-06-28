@@ -40,8 +40,7 @@ class AnalyticsDashboardTest extends TestCase
 
         $this->get(route('management.index'))
             ->assertOk()
-            ->assertSee('href="'.route('management.analytics.index').'"', false)
-            ->assertSee('Review revenue trends, booking patterns, customer segments, and promotion performance.');
+            ->assertSee('href="'.route('management.analytics.index').'"', false);
     }
 
     public function test_revenue_counts_only_paid_transactions_and_separates_pending_and_void_totals(): void

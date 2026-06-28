@@ -18,7 +18,7 @@
             </div>
 
             <div class="mt-7 space-y-6">
-                <x-form.select name="rating" label="Rating" required>
+                <x-form.select name="rating" label="Rating" required hint="Rate your overall spa experience from 1 to 5.">
                     <option value="">Select a rating</option>
                     @for ($rating = 5; $rating >= 1; $rating--)
                         <option value="{{ $rating }}" @selected((string) old('rating') === (string) $rating)>{{ $rating }} / 5</option>
