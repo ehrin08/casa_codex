@@ -25,23 +25,41 @@
                             ],
                         ],
                         [
-                            'title' => 'Spa Operations',
+                            'title' => 'Daily Operations',
                             'links' => [
-                                ['label' => 'Services', 'route' => 'management.services.index', 'active' => 'management.services.*', 'icon' => 'services'],
-                                ['label' => 'Therapists', 'route' => 'management.therapists.index', 'active' => 'management.therapists.*', 'icon' => 'people'],
-                                ['label' => 'Customers', 'route' => 'management.customers.index', 'active' => 'management.customers.*', 'icon' => 'people'],
+                                ['label' => 'Walk-in Booking', 'route' => 'management.walk-ins.create', 'active' => 'management.walk-ins.*', 'icon' => 'booking'],
+                                ['label' => 'Appointments', 'route' => 'management.appointments.index', 'active' => 'management.appointments.*', 'icon' => 'appointments'],
                                 ['label' => 'Availability', 'route' => 'management.availability.index', 'active' => 'management.availability.*', 'icon' => 'availability'],
                             ],
                         ],
                         [
-                            'title' => 'Appointments & Sales',
+                            'title' => 'Payments & Reports',
                             'links' => [
-                                ['label' => 'Appointments', 'route' => 'management.appointments.index', 'active' => 'management.appointments.*', 'icon' => 'appointments'],
                                 ['label' => 'Transactions', 'route' => 'management.transactions.index', 'active' => 'management.transactions.*', 'icon' => 'transactions'],
                                 ['label' => 'Commissions', 'route' => 'management.commissions.index', 'active' => 'management.commissions.*', 'icon' => 'commissions'],
                                 ['label' => 'Reports', 'route' => 'management.reports.index', 'active' => 'management.reports.*', 'icon' => 'future'],
+                            ],
+                        ],
+                        [
+                            'title' => 'Insights',
+                            'links' => [
                                 ['label' => 'Analytics', 'route' => 'management.analytics.index', 'active' => 'management.analytics.*', 'icon' => 'future'],
-                                ['label' => 'Reviews', 'route' => 'management.reviews.index', 'active' => 'management.reviews.*', 'icon' => 'future'],
+                                ['label' => 'RFM Scores', 'route' => 'management.rfm.index', 'active' => 'management.rfm.*', 'icon' => 'future'],
+                                ['label' => 'Reviews & Sentiment', 'route' => 'management.reviews.index', 'active' => 'management.reviews.*', 'icon' => 'future'],
+                            ],
+                        ],
+                        [
+                            'title' => 'Promotions',
+                            'links' => [
+                                ['label' => 'Promotions', 'route' => 'management.promotions.index', 'active' => 'management.promotions.*', 'icon' => 'future'],
+                            ],
+                        ],
+                        [
+                            'title' => 'Records',
+                            'links' => [
+                                ['label' => 'Services', 'route' => 'management.services.index', 'active' => 'management.services.*', 'icon' => 'services'],
+                                ['label' => 'Therapists', 'route' => 'management.therapists.index', 'active' => 'management.therapists.*', 'icon' => 'people'],
+                                ['label' => 'Customers', 'route' => 'management.customers.index', 'active' => 'management.customers.*', 'icon' => 'people'],
                             ],
                         ],
                         [

@@ -45,7 +45,7 @@ class PromotionRuleManagementTest extends TestCase
         $this->actingAs($manager)
             ->get(route('management.index'))
             ->assertOk()
-            ->assertSee('Promotion Rules')
+            ->assertSee('Promotions')
             ->assertSee('href="'.route('management.promotions.index').'"', false);
     }
 

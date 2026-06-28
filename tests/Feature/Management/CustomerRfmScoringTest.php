@@ -47,9 +47,9 @@ class CustomerRfmScoringTest extends TestCase
 
         $this->get(route('management.index'))
             ->assertOk()
-            ->assertSee('Customer Segments')
+            ->assertSee('RFM Scores')
             ->assertSee('href="'.route('management.rfm.index').'"', false)
-            ->assertSee('Review RFM scores and segment customers for future promotions.');
+            ->assertSee('Review customer value segments and retention indicators.');
     }
 
     public function test_recalculation_uses_only_paid_transactions_and_defaults_customers_without_paid_history(): void
