@@ -21,12 +21,14 @@ class AppointmentController extends Controller
             ->whereDate('appointment_date', '>=', today())
             ->orderBy('appointment_date')
             ->orderBy('start_time')
-            ->paginate(10, ['*'], 'upcoming_page');
+            ->paginate(10, ['*'], 'upcoming_page')
+            ->withQueryString();
         $pastAppointments = (clone $baseQuery)
             ->whereDate('appointment_date', '<', today())
             ->orderByDesc('appointment_date')
             ->orderByDesc('start_time')
-            ->paginate(10, ['*'], 'past_page');
+            ->paginate(10, ['*'], 'past_page')
+            ->withQueryString();
 
         return view('customer.appointments.index', compact('upcomingAppointments', 'pastAppointments'));
     }

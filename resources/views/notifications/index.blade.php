@@ -9,12 +9,6 @@
         @forelse ($notifications as $notification)
             @php
                 $appointmentId = $notification->data['appointment_id'] ?? null;
-                $appointmentRoute = match (true) {
-                    auth()->user()->isManagement() => 'management.appointments.show',
-                    auth()->user()->isTherapist() => 'therapist.appointments.show',
-                    auth()->user()->isCustomer() => 'customer.appointments.show',
-                    default => null,
-                };
             @endphp
             <article @class([
                 'rounded-2xl border p-5 shadow-[0_16px_40px_-32px_rgba(48,33,28,0.5)] transition sm:p-6',

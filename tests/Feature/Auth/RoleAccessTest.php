@@ -60,7 +60,7 @@ class RoleAccessTest extends TestCase
         }
     }
 
-    public function test_login_redirects_each_role_through_dashboard_to_its_area(): void
+    public function test_login_redirects_each_role_directly_to_its_area(): void
     {
         $destinations = [
             'management' => '/management',
@@ -74,7 +74,7 @@ class RoleAccessTest extends TestCase
             $this->post('/login', [
                 'email' => $user->email,
                 'password' => 'password',
-            ])->assertRedirect('/dashboard');
+            ])->assertRedirect($destination);
 
             $this->get('/dashboard')->assertRedirect($destination);
             $this->post('/logout');

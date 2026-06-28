@@ -1,0 +1,41 @@
+flowchart LR
+    %% Actors
+    C(["Customer"])
+    T(["Therapist"])
+    M(["Management"])
+
+    %% Use Cases
+    subgraph "Casa Paraiso Spa Management System"
+        direction TB
+        UC1([Book Appointment])
+        UC2([View Own Appointments])
+        
+        UC3([View Assigned Schedule])
+        UC4([View Own Commissions])
+        
+        UC5([Manage Spa Services])
+        UC6([Manage Profiles & Availability])
+        UC7([Manage Appointment Status])
+        UC8([Record Cash Transactions])
+        UC9([Monitor & Settle Commissions])
+        
+        UC10([View Notifications])
+    end
+
+    %% Customer relationships
+    C --> UC1
+    C --> UC2
+    C --> UC10
+
+    %% Therapist relationships
+    T --> UC3
+    T --> UC4
+    T --> UC10
+
+    %% Management relationships
+    M --> UC5
+    M --> UC6
+    M --> UC7
+    M --> UC8
+    M --> UC9
+    M --> UC10

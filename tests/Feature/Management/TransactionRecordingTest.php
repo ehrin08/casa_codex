@@ -45,6 +45,21 @@ class TransactionRecordingTest extends TestCase
             ->assertSee('href="'.route('management.transactions.create', ['appointment_id' => $appointment->id]).'"', false);
     }
 
+    public function test_transaction_create_eligible_appointment_list_is_paginated(): void
+    {
+        $manager = $this->createUserWithRole('management');
+
+        foreach (range(1, 16) as $index) {
+            $this->createAppointment(serviceName: 'Paginated Transaction Service '.$index);
+        }
+
+        $this->actingAs($manager)
+            ->get(route('management.transactions.create'))
+            ->assertOk()
+            ->assertSee('Choose a completed appointment')
+            ->assertSee('page=2', false);
+    }
+
     public function test_guests_are_redirected_from_all_transaction_pages(): void
     {
         $appointment = $this->createAppointment();
@@ -325,6 +340,7 @@ class TransactionRecordingTest extends TestCase
         string $status = Appointment::STATUS_COMPLETED,
         ?float $snapshotPrice = 850.00,
         float $servicePrice = 900.00,
+        string $serviceName = 'Transaction Test Service',
     ): Appointment {
         $customer = CustomerProfile::create([
             'first_name' => 'Transaction',
@@ -338,7 +354,7 @@ class TransactionRecordingTest extends TestCase
             'status' => 'active',
         ]);
         $service = Service::create([
-            'name' => 'Transaction Test Service',
+            'name' => $serviceName,
             'duration_minutes' => 60,
             'price' => $servicePrice,
             'status' => 'active',

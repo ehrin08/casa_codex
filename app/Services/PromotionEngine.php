@@ -16,11 +16,22 @@ class PromotionEngine
         Appointment $appointment,
         ?CarbonInterface $asOf = null,
     ): array {
+        $rfmScore = $this->latestRfmScore($appointment);
+        $subtotalCents = $this->subtotalCents($appointment);
+
         return Promotion::query()
             ->where('status', Promotion::STATUS_ACTIVE)
             ->orderBy('title')
             ->get()
-            ->map(fn (Promotion $promotion): array => $this->evaluate($promotion, $appointment, $asOf))
+            ->map(
+                fn (Promotion $promotion): array => $this->evaluateWithContext(
+                    $promotion,
+                    $appointment,
+                    $rfmScore,
+                    $subtotalCents,
+                    $asOf,
+                )
+            )
             ->filter(fn (array $evaluation): bool => $evaluation['eligible'])
             ->values()
             ->all();
@@ -34,9 +45,26 @@ class PromotionEngine
         Appointment $appointment,
         ?CarbonInterface $asOf = null,
     ): array {
+        return $this->evaluateWithContext(
+            $promotion,
+            $appointment,
+            $this->latestRfmScore($appointment),
+            $this->subtotalCents($appointment),
+            $asOf,
+        );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function evaluateWithContext(
+        Promotion $promotion,
+        Appointment $appointment,
+        ?CustomerRfmScore $rfmScore,
+        int $subtotalCents,
+        ?CarbonInterface $asOf = null,
+    ): array {
         $evaluationDate = $asOf ?? now();
-        $rfmScore = $this->latestRfmScore($appointment);
-        $subtotalCents = $this->subtotalCents($appointment);
         $discountCents = $this->calculateDiscount($promotion, $subtotalCents);
 
         $criteria = [

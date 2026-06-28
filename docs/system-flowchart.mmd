@@ -1,0 +1,51 @@
+flowchart LR
+    %% Styling and Definitions
+    classDef process fill:#faf5e9,stroke:#50362a,stroke-width:2px;
+    classDef decision fill:#fff3cd,stroke:#ae8745,stroke-width:2px;
+    classDef startEnd fill:#517049,stroke:#517049,color:#fff,stroke-width:2px;
+    classDef io fill:#e2e8f0,stroke:#64748b,stroke-width:2px;
+
+    Start([Start]):::startEnd
+    End([End]):::startEnd
+
+    %% Booking Sub-process
+    Login[/Customer Accesses System/]:::io
+    SelectDetails[/Select Service, Therapist & Time/]:::io
+    CheckAvailability{Slot Available &<br/>No Overlaps?}:::decision
+    SaveAppointment[Save Pending Appointment]:::process
+    NotifySystem[Notify Management & Therapist]:::process
+
+    %% Appointment Fulfillment
+    ManagementReview[Management Monitors Appointments]:::process
+    CustomerArrival{Customer Arrives?}:::decision
+    MarkCancelled[Update Status:<br/>Cancelled / No Show]:::process
+    MarkCompleted[Update Status:<br/>Confirmed -> Completed]:::process
+
+    %% Transaction & Commission
+    InitiateTransaction[Initiate Cash Transaction]:::process
+    InputPayment[/Input Discount &<br/>Cash Tendered/]:::io
+    ValidatePayment{Is Cash Sufficient?}:::decision
+    SaveTransaction[Record Paid Transaction]:::process
+    GenerateCommission[Generate Pending<br/>Therapist Commission]:::process
+
+    %% Flow connections
+    Start --> Login
+    Login --> SelectDetails
+    SelectDetails --> CheckAvailability
+    CheckAvailability -- No --> SelectDetails
+    CheckAvailability -- Yes --> SaveAppointment
+    SaveAppointment --> NotifySystem
+    NotifySystem --> ManagementReview
+
+    ManagementReview --> CustomerArrival
+    CustomerArrival -- No --> MarkCancelled
+    MarkCancelled --> End
+    CustomerArrival -- Yes --> MarkCompleted
+
+    MarkCompleted --> InitiateTransaction
+    InitiateTransaction --> InputPayment
+    InputPayment --> ValidatePayment
+    ValidatePayment -- No --> InputPayment
+    ValidatePayment -- Yes --> SaveTransaction
+    SaveTransaction --> GenerateCommission
+    GenerateCommission --> End

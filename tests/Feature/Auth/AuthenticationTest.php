@@ -20,7 +20,7 @@ class AuthenticationTest extends TestCase
             ->assertSee('Welcome back');
     }
 
-    public function test_valid_user_can_authenticate_and_is_redirected_by_role(): void
+    public function test_valid_user_can_authenticate_directly_to_role_dashboard(): void
     {
         $role = Role::create([
             'name' => 'management',
@@ -33,12 +33,12 @@ class AuthenticationTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response->assertRedirect('/dashboard');
+        $response->assertRedirect('/management');
         $this->assertAuthenticatedAs($user);
         $this->get('/dashboard')->assertRedirect('/management');
     }
 
-    public function test_seeded_accounts_can_authenticate_and_redirect_to_their_role_areas(): void
+    public function test_seeded_accounts_can_authenticate_and_redirect_directly_to_their_role_areas(): void
     {
         $this->seed([RoleSeeder::class, DevelopmentUserSeeder::class]);
 
@@ -54,7 +54,7 @@ class AuthenticationTest extends TestCase
             $this->post('/login', [
                 'email' => $email,
                 'password' => 'password',
-            ])->assertRedirect('/dashboard');
+            ])->assertRedirect($destination);
 
             $this->assertAuthenticated();
             $this->get('/dashboard')->assertRedirect($destination);
@@ -104,5 +104,18 @@ class AuthenticationTest extends TestCase
         $this->get('/dashboard')->assertRedirect('/login');
         $this->get('/management')->assertRedirect('/login');
         $this->post('/logout')->assertRedirect('/login');
+    }
+
+    public function test_authenticated_user_visiting_login_goes_directly_to_role_dashboard(): void
+    {
+        $role = Role::create([
+            'name' => 'customer',
+            'display_name' => 'Customer',
+        ]);
+        $user = User::factory()->create(['role_id' => $role->id]);
+
+        $this->actingAs($user)
+            ->get('/login')
+            ->assertRedirect('/customer');
     }
 }

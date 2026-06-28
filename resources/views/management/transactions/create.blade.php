@@ -117,5 +117,6 @@
                 </tbody>
             </table>
         </div>
+        <div class="mt-6">{{ $eligibleAppointments->links() }}</div>
     @endif
 @endsection

@@ -76,6 +76,16 @@ class User extends Authenticatable
         return $this->hasRole('customer');
     }
 
+    public function dashboardRouteName(): string
+    {
+        return match (true) {
+            $this->isManagement() => 'management.index',
+            $this->isTherapist() => 'therapist.index',
+            $this->isCustomer() => 'customer.index',
+            default => 'home',
+        };
+    }
+
     public function customerProfile(): HasOne
     {
         return $this->hasOne(CustomerProfile::class);

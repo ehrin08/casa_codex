@@ -39,16 +39,16 @@ class TransactionController extends Controller
         $eligibleAppointments = $this->eligibleAppointments()
             ->orderByDesc('appointment_date')
             ->orderByDesc('start_time')
-            ->get();
+            ->paginate(15)
+            ->withQueryString();
 
         $selectedAppointment = null;
         $promotionRecommendations = [];
 
         if ($request->filled('appointment_id')) {
-            $selectedAppointment = $eligibleAppointments
-                ->firstWhere('id', $request->integer('appointment_id'));
-
-            abort_if(! $selectedAppointment, 404);
+            $selectedAppointment = $this->eligibleAppointments()
+                ->whereKey($request->integer('appointment_id'))
+                ->firstOrFail();
 
             $promotionRecommendations = $promotionEngine->recommendationsForAppointment($selectedAppointment);
         }

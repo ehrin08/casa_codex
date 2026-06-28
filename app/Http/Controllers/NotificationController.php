@@ -11,12 +11,21 @@ class NotificationController extends Controller
 {
     public function index(Request $request): View
     {
-        $notifications = $request->user()
+        $user = $request->user();
+        $appointmentRoute = match (true) {
+            $user->isManagement() => 'management.appointments.show',
+            $user->isTherapist() => 'therapist.appointments.show',
+            $user->isCustomer() => 'customer.appointments.show',
+            default => null,
+        };
+
+        $notifications = $user
             ->systemNotifications()
             ->latest()
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
-        return view('notifications.index', compact('notifications'));
+        return view('notifications.index', compact('appointmentRoute', 'notifications'));
     }
 
     public function markRead(Request $request, SystemNotification $notification): RedirectResponse

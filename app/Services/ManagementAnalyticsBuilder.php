@@ -32,20 +32,13 @@ class ManagementAnalyticsBuilder
         $dateFrom = CarbonImmutable::parse((string) $filters['date_from']);
         $dateTo = CarbonImmutable::parse((string) $filters['date_to']);
 
-        $appointments = $this->appointmentQuery($filters)
-            ->with(['service', 'therapistProfile'])
-            ->whereBetween('appointment_date', [$dateFrom->toDateString(), $dateTo->toDateString()])
-            ->get();
+        $revenue = $this->revenue($filters, $dateFrom, $dateTo);
+        $transactionCount = $revenue['transaction_count'];
+        unset($revenue['transaction_count']);
 
-        $transactions = $this->transactionQuery($filters)
-            ->with('appointment.service')
-            ->whereBetween('transaction_date', [$dateFrom->startOfDay(), $dateTo->endOfDay()])
-            ->get();
-
-        $revenue = $this->revenue($transactions);
-        $services = $this->servicePopularity($appointments, $transactions);
-        $bookingPeriods = $this->bookingPeriods($appointments);
-        $rfm = $this->rfm($filters, $appointments, $dateFrom, $dateTo);
+        $services = $this->servicePopularity($filters, $dateFrom, $dateTo);
+        $bookingPeriods = $this->bookingPeriods($filters, $dateFrom, $dateTo);
+        $rfm = $this->rfm($filters, $this->matchingCustomerIds($filters, $dateFrom, $dateTo), $dateFrom, $dateTo);
         $promotions = $this->promotions($filters, $dateFrom, $dateTo);
         $reviews = $this->reviews($filters, $dateFrom, $dateTo);
 
@@ -57,8 +50,8 @@ class ManagementAnalyticsBuilder
             'rfm' => $rfm,
             'promotions' => $promotions,
             'reviews' => $reviews,
-            'hasData' => $transactions->isNotEmpty()
-                || $appointments->isNotEmpty()
+            'hasData' => $transactionCount > 0
+                || $bookingPeriods['total'] > 0
                 || $rfm['total'] > 0
                 || $promotions['usage_count'] > 0
                 || ($reviews['available'] && $reviews['total'] > 0),
@@ -69,10 +62,10 @@ class ManagementAnalyticsBuilder
     private function appointmentQuery(array $filters): Builder
     {
         return Appointment::query()
-            ->when($filters['service_id'] ?? null, fn (Builder $query, int $serviceId) => $query->where('service_id', $serviceId))
+            ->when($filters['service_id'] ?? null, fn (Builder $query, int $serviceId) => $query->where('appointments.service_id', $serviceId))
             ->when(
                 $filters['therapist_profile_id'] ?? null,
-                fn (Builder $query, int $therapistId) => $query->where('therapist_profile_id', $therapistId),
+                fn (Builder $query, int $therapistId) => $query->where('appointments.therapist_profile_id', $therapistId),
             );
     }
 
@@ -91,64 +84,100 @@ class ManagementAnalyticsBuilder
             });
     }
 
-    /**
-     * @param  Collection<int, Transaction>  $transactions
-     * @return array<string, mixed>
-     */
-    private function revenue(Collection $transactions): array
+    /** @param array<string, int|string|null> $filters */
+    private function revenue(array $filters, CarbonImmutable $dateFrom, CarbonImmutable $dateTo): array
     {
-        $paid = $transactions->where('payment_status', Transaction::STATUS_PAID);
-        $pending = $transactions->where('payment_status', Transaction::STATUS_PENDING);
-        $void = $transactions->where('payment_status', Transaction::STATUS_VOID);
+        $baseQuery = $this->transactionQuery($filters)
+            ->whereBetween('transactions.transaction_date', [$dateFrom->startOfDay(), $dateTo->endOfDay()]);
 
-        $daily = $paid
-            ->groupBy(fn (Transaction $transaction): string => $transaction->transaction_date->toDateString())
-            ->map(fn (Collection $day, string $date): array => [
-                'date' => $date,
-                'count' => $day->count(),
-                'net_revenue' => $this->sumMoney($day, 'total_amount'),
-            ])
-            ->sortBy('date')
-            ->values();
+        $statusRows = (clone $baseQuery)
+            ->select('transactions.payment_status')
+            ->selectRaw('COUNT(*) as aggregate')
+            ->selectRaw('COALESCE(SUM(transactions.subtotal), 0) as subtotal_total')
+            ->selectRaw('COALESCE(SUM(transactions.discount_amount), 0) as discount_total')
+            ->selectRaw('COALESCE(SUM(transactions.total_amount), 0) as total_amount')
+            ->groupBy('transactions.payment_status')
+            ->get()
+            ->keyBy('payment_status');
+
+        $paid = $statusRows->get(Transaction::STATUS_PAID);
+        $pending = $statusRows->get(Transaction::STATUS_PENDING);
+        $void = $statusRows->get(Transaction::STATUS_VOID);
+
+        $daily = (clone $baseQuery)
+            ->where('transactions.payment_status', Transaction::STATUS_PAID)
+            ->selectRaw('DATE(transactions.transaction_date) as date')
+            ->selectRaw('COUNT(*) as aggregate')
+            ->selectRaw('COALESCE(SUM(transactions.total_amount), 0) as net_revenue')
+            ->groupByRaw('DATE(transactions.transaction_date)')
+            ->orderBy('date')
+            ->get()
+            ->map(fn (Transaction $transaction): array => [
+                'date' => $transaction->date,
+                'count' => (int) $transaction->aggregate,
+                'net_revenue' => (float) $transaction->net_revenue,
+            ]);
 
         return [
-            'gross_subtotal' => $this->sumMoney($paid, 'subtotal'),
-            'discount_total' => $this->sumMoney($paid, 'discount_amount'),
-            'net_revenue' => $this->sumMoney($paid, 'total_amount'),
-            'paid_count' => $paid->count(),
-            'pending_count' => $pending->count(),
-            'pending_total' => $this->sumMoney($pending, 'total_amount'),
-            'void_count' => $void->count(),
-            'void_total' => $this->sumMoney($void, 'total_amount'),
+            'gross_subtotal' => (float) ($paid?->subtotal_total ?? 0),
+            'discount_total' => (float) ($paid?->discount_total ?? 0),
+            'net_revenue' => (float) ($paid?->total_amount ?? 0),
+            'paid_count' => (int) ($paid?->aggregate ?? 0),
+            'pending_count' => (int) ($pending?->aggregate ?? 0),
+            'pending_total' => (float) ($pending?->total_amount ?? 0),
+            'void_count' => (int) ($void?->aggregate ?? 0),
+            'void_total' => (float) ($void?->total_amount ?? 0),
             'daily' => $daily,
+            'transaction_count' => (int) $statusRows->sum('aggregate'),
         ];
     }
 
     /**
-     * @param  Collection<int, Appointment>  $appointments
-     * @param  Collection<int, Transaction>  $transactions
+     * @param  array<string, int|string|null>  $filters
      * @return Collection<int, array<string, float|int|string>>
      */
-    private function servicePopularity(Collection $appointments, Collection $transactions): Collection
+    private function servicePopularity(array $filters, CarbonImmutable $dateFrom, CarbonImmutable $dateTo): Collection
     {
         $rows = [];
+        $serviceLabelSql = "COALESCE(NULLIF(appointments.service_name_snapshot, ''), services.name, 'Service unavailable')";
 
-        foreach ($appointments as $appointment) {
-            $key = $this->serviceKey($appointment);
-            $rows[$key] ??= $this->emptyServiceRow($appointment);
-            $rows[$key]['appointment_count']++;
+        $appointmentRows = $this->appointmentQuery($filters)
+            ->leftJoin('services', 'services.id', '=', 'appointments.service_id')
+            ->whereBetween('appointments.appointment_date', [$dateFrom->toDateString(), $dateTo->toDateString()])
+            ->select('appointments.service_id')
+            ->selectRaw($serviceLabelSql.' as service_label')
+            ->selectRaw('COUNT(*) as appointment_count')
+            ->selectRaw(
+                'SUM(CASE WHEN appointments.status = ? THEN 1 ELSE 0 END) as completed_count',
+                [Appointment::STATUS_COMPLETED],
+            )
+            ->groupBy('appointments.service_id', 'appointments.service_name_snapshot', 'services.name')
+            ->get();
 
-            if ($appointment->status === Appointment::STATUS_COMPLETED) {
-                $rows[$key]['completed_count']++;
-            }
+        foreach ($appointmentRows as $row) {
+            $key = $this->serviceRowKey($row->service_id === null ? null : (int) $row->service_id, $row->service_label);
+            $rows[$key] ??= $this->emptyServiceRowFromLabel($row->service_label);
+            $rows[$key]['appointment_count'] += (int) $row->appointment_count;
+            $rows[$key]['completed_count'] += (int) $row->completed_count;
         }
 
-        foreach ($transactions->where('payment_status', Transaction::STATUS_PAID) as $transaction) {
-            $appointment = $transaction->appointment;
-            $key = $this->serviceKey($appointment);
-            $rows[$key] ??= $this->emptyServiceRow($appointment);
-            $rows[$key]['paid_transaction_count']++;
-            $rows[$key]['revenue'] += (float) $transaction->total_amount;
+        $transactionRows = $this->transactionQuery($filters)
+            ->join('appointments', 'appointments.id', '=', 'transactions.appointment_id')
+            ->leftJoin('services', 'services.id', '=', 'appointments.service_id')
+            ->where('transactions.payment_status', Transaction::STATUS_PAID)
+            ->whereBetween('transactions.transaction_date', [$dateFrom->startOfDay(), $dateTo->endOfDay()])
+            ->select('appointments.service_id')
+            ->selectRaw($serviceLabelSql.' as service_label')
+            ->selectRaw('COUNT(*) as paid_transaction_count')
+            ->selectRaw('COALESCE(SUM(transactions.total_amount), 0) as revenue')
+            ->groupBy('appointments.service_id', 'appointments.service_name_snapshot', 'services.name')
+            ->get();
+
+        foreach ($transactionRows as $row) {
+            $key = $this->serviceRowKey($row->service_id === null ? null : (int) $row->service_id, $row->service_label);
+            $rows[$key] ??= $this->emptyServiceRowFromLabel($row->service_label);
+            $rows[$key]['paid_transaction_count'] += (int) $row->paid_transaction_count;
+            $rows[$key]['revenue'] += (float) $row->revenue;
         }
 
         return collect($rows)
@@ -167,61 +196,84 @@ class ManagementAnalyticsBuilder
             ->values();
     }
 
-    /**
-     * @param  Collection<int, Appointment>  $appointments
-     * @return array<string, mixed>
-     */
-    private function bookingPeriods(Collection $appointments): array
+    /** @param array<string, int|string|null> $filters */
+    private function bookingPeriods(array $filters, CarbonImmutable $dateFrom, CarbonImmutable $dateTo): array
     {
-        $days = collect(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
+        $baseQuery = $this->appointmentQuery($filters)
+            ->whereBetween('appointments.appointment_date', [$dateFrom->toDateString(), $dateTo->toDateString()]);
+
+        $statusCounts = (clone $baseQuery)
+            ->select('appointments.status')
+            ->selectRaw('COUNT(*) as aggregate')
+            ->groupBy('appointments.status')
+            ->pluck('aggregate', 'status');
+
+        $dateRows = (clone $baseQuery)
+            ->selectRaw('appointments.appointment_date as date')
+            ->selectRaw('COUNT(*) as aggregate')
+            ->groupBy('appointments.appointment_date')
+            ->get();
+
+        $dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        $dayCounts = array_fill_keys($dayNames, 0);
+
+        foreach ($dateRows as $row) {
+            $dayCounts[CarbonImmutable::parse($row->date)->format('l')] += (int) $row->aggregate;
+        }
+
+        $days = collect($dayNames)
             ->map(fn (string $day): array => [
                 'label' => $day,
-                'count' => $appointments->filter(
-                    fn (Appointment $appointment): bool => $appointment->appointment_date->format('l') === $day,
-                )->count(),
+                'count' => $dayCounts[$day],
             ]);
 
-        $hours = $appointments
-            ->groupBy(fn (Appointment $appointment): string => substr((string) $appointment->start_time, 0, 5))
-            ->map(fn (Collection $period, string $hour): array => ['label' => $hour, 'count' => $period->count()])
-            ->sortBy('label')
-            ->values();
+        $hours = (clone $baseQuery)
+            ->select('appointments.start_time')
+            ->selectRaw('COUNT(*) as aggregate')
+            ->groupBy('appointments.start_time')
+            ->orderBy('appointments.start_time')
+            ->get()
+            ->map(fn (Appointment $appointment): array => [
+                'label' => substr((string) $appointment->start_time, 0, 5),
+                'count' => (int) $appointment->aggregate,
+            ]);
 
-        $busiestDates = $appointments
-            ->groupBy(fn (Appointment $appointment): string => $appointment->appointment_date->toDateString())
-            ->map(fn (Collection $date, string $label): array => ['date' => $label, 'count' => $date->count()])
+        $busiestDates = $dateRows
+            ->map(fn (Appointment $appointment): array => [
+                'date' => $appointment->date,
+                'count' => (int) $appointment->aggregate,
+            ])
             ->sortByDesc('count')
             ->take(5)
             ->values();
 
-        $statusCounts = $appointments->countBy('status');
-        $completed = (int) $statusCounts->get(Appointment::STATUS_COMPLETED, 0);
-        $therapistWorkload = $appointments
-            ->filter(fn (Appointment $appointment): bool => $appointment->therapist_profile_id !== null)
-            ->groupBy('therapist_profile_id')
-            ->map(function (Collection $bookings): array {
-                $therapist = $bookings->first()->therapistProfile;
-
-                return [
-                    'therapist' => $therapist
-                        ? trim($therapist->first_name.' '.$therapist->last_name)
-                        : 'Therapist unavailable',
-                    'count' => $bookings->count(),
-                ];
-            })
+        $therapistWorkload = (clone $baseQuery)
+            ->leftJoin('therapist_profiles', 'therapist_profiles.id', '=', 'appointments.therapist_profile_id')
+            ->whereNotNull('appointments.therapist_profile_id')
+            ->select('appointments.therapist_profile_id', 'therapist_profiles.first_name', 'therapist_profiles.last_name')
+            ->selectRaw('COUNT(*) as aggregate')
+            ->groupBy('appointments.therapist_profile_id', 'therapist_profiles.first_name', 'therapist_profiles.last_name')
+            ->get()
+            ->map(fn (Appointment $appointment): array => [
+                'therapist' => trim(($appointment->first_name ?? '').' '.($appointment->last_name ?? '')) ?: 'Therapist unavailable',
+                'count' => (int) $appointment->aggregate,
+            ])
             ->sortByDesc('count')
             ->values();
+
+        $total = (int) $statusCounts->sum();
+        $completed = (int) $statusCounts->get(Appointment::STATUS_COMPLETED, 0);
 
         return [
             'days' => $days,
             'hours' => $hours,
             'busiest_dates' => $busiestDates,
-            'total' => $appointments->count(),
+            'total' => $total,
             'completed' => $completed,
             'cancelled' => (int) $statusCounts->get(Appointment::STATUS_CANCELLED, 0),
             'no_show' => (int) $statusCounts->get(Appointment::STATUS_NO_SHOW, 0),
-            'completion_rate' => $appointments->isNotEmpty()
-                ? round(($completed / $appointments->count()) * 100, 1)
+            'completion_rate' => $total > 0
+                ? round(($completed / $total) * 100, 1)
                 : 0.0,
             'therapist_workload' => $therapistWorkload,
         ];
@@ -229,12 +281,12 @@ class ManagementAnalyticsBuilder
 
     /**
      * @param  array<string, int|string|null>  $filters
-     * @param  Collection<int, Appointment>  $appointments
+     * @param  Collection<int, int>  $customerIds
      * @return array{total: int, segments: Collection<int, array<string, float|int|string>>}
      */
     private function rfm(
         array $filters,
-        Collection $appointments,
+        Collection $customerIds,
         CarbonImmutable $dateFrom,
         CarbonImmutable $dateTo,
     ): array {
@@ -243,11 +295,13 @@ class ManagementAnalyticsBuilder
             ->orderByDesc('calculated_at')
             ->orderByDesc('id');
 
-        if (($filters['service_id'] ?? null) || ($filters['therapist_profile_id'] ?? null)) {
-            $query->whereIn('customer_profile_id', $appointments->pluck('customer_profile_id')->filter()->unique());
+        if ($this->hasAppointmentRelationshipFilter($filters)) {
+            $query->whereIn('customer_profile_id', $customerIds);
         }
 
-        $latestScores = $query->get()->unique('customer_profile_id');
+        $latestScores = $query
+            ->get(['customer_profile_id', 'segment_label', 'calculated_at', 'id'])
+            ->unique('customer_profile_id');
         $counts = $latestScores->countBy('segment_label');
         $total = $latestScores->count();
 
@@ -266,42 +320,54 @@ class ManagementAnalyticsBuilder
      */
     private function promotions(array $filters, CarbonImmutable $dateFrom, CarbonImmutable $dateTo): array
     {
-        $query = PromotionUsage::query()
-            ->with(['promotion', 'transaction'])
-            ->whereBetween('used_at', [$dateFrom->startOfDay(), $dateTo->endOfDay()]);
+        $baseQuery = PromotionUsage::query()
+            ->whereBetween('promotion_usages.used_at', [$dateFrom->startOfDay(), $dateTo->endOfDay()]);
 
-        $this->applyUsageRelationshipFilters($query, $filters);
-        $usages = $query->get();
+        $this->applyUsageRelationshipFilters($baseQuery, $filters);
 
-        $top = $usages
-            ->groupBy('promotion_id')
-            ->map(function (Collection $promotionUsages): array {
-                $promotion = $promotionUsages->first()->promotion;
-                $paidTransactions = $promotionUsages
-                    ->pluck('transaction')
-                    ->filter(fn (?Transaction $transaction): bool => $transaction?->payment_status === Transaction::STATUS_PAID)
-                    ->unique('id');
+        $summary = (clone $baseQuery)
+            ->selectRaw('COUNT(*) as usage_count')
+            ->selectRaw('COALESCE(SUM(promotion_usages.discount_amount), 0) as discount_total')
+            ->first();
 
-                return [
-                    'promotion' => $promotion?->title ?? 'Promotion unavailable',
-                    'usage_count' => $promotionUsages->count(),
-                    'discount_total' => $this->sumMoney($promotionUsages, 'discount_amount'),
-                    'paid_revenue' => $this->sumMoney($paidTransactions, 'total_amount'),
-                ];
-            })
-            ->sortByDesc('usage_count')
-            ->values()
-            ->take(5);
+        $paidTransactionIds = (clone $baseQuery)
+            ->whereHas('transaction', fn (Builder $transaction) => $transaction
+                ->where('payment_status', Transaction::STATUS_PAID))
+            ->whereNotNull('promotion_usages.transaction_id')
+            ->distinct()
+            ->pluck('promotion_usages.transaction_id');
 
-        $paidTransactions = $usages
-            ->pluck('transaction')
-            ->filter(fn (?Transaction $transaction): bool => $transaction?->payment_status === Transaction::STATUS_PAID)
-            ->unique('id');
+        $paidRevenue = $paidTransactionIds->isEmpty()
+            ? 0.0
+            : (float) Transaction::query()
+                ->whereIn('id', $paidTransactionIds)
+                ->sum('total_amount');
+
+        $top = (clone $baseQuery)
+            ->leftJoin('promotions', 'promotions.id', '=', 'promotion_usages.promotion_id')
+            ->leftJoin('transactions', 'transactions.id', '=', 'promotion_usages.transaction_id')
+            ->select('promotion_usages.promotion_id', 'promotions.title')
+            ->selectRaw('COUNT(*) as usage_count')
+            ->selectRaw('COALESCE(SUM(promotion_usages.discount_amount), 0) as discount_total')
+            ->selectRaw(
+                'COALESCE(SUM(CASE WHEN transactions.payment_status = ? THEN transactions.total_amount ELSE 0 END), 0) as paid_revenue',
+                [Transaction::STATUS_PAID],
+            )
+            ->groupBy('promotion_usages.promotion_id', 'promotions.title')
+            ->orderByDesc('usage_count')
+            ->limit(5)
+            ->get()
+            ->map(fn (PromotionUsage $usage): array => [
+                'promotion' => $usage->title ?? 'Promotion unavailable',
+                'usage_count' => (int) $usage->usage_count,
+                'discount_total' => (float) $usage->discount_total,
+                'paid_revenue' => (float) $usage->paid_revenue,
+            ]);
 
         return [
-            'usage_count' => $usages->count(),
-            'discount_total' => $this->sumMoney($usages, 'discount_amount'),
-            'paid_revenue' => $this->sumMoney($paidTransactions, 'total_amount'),
+            'usage_count' => (int) ($summary?->usage_count ?? 0),
+            'discount_total' => (float) ($summary?->discount_total ?? 0),
+            'paid_revenue' => $paidRevenue,
             'top' => $top,
         ];
     }
@@ -354,56 +420,80 @@ class ManagementAnalyticsBuilder
                     ->where('therapist_profile_id', $therapistId));
             });
 
-        $reviews = $query->get(['id', 'rating', 'sentiment_label', 'reviewed_at']);
-        $counts = $reviews->countBy('sentiment_label');
         $recentFrom = $dateTo->subDays(6)->max($dateFrom)->startOfDay();
+        $summary = (clone $query)
+            ->selectRaw('COUNT(*) as aggregate')
+            ->selectRaw('AVG(rating) as average_rating')
+            ->first();
+        $counts = (clone $query)
+            ->select('sentiment_label')
+            ->selectRaw('COUNT(*) as aggregate')
+            ->groupBy('sentiment_label')
+            ->pluck('aggregate', 'sentiment_label');
+        $recentNegative = (clone $query)
+            ->where('sentiment_label', CustomerReview::SENTIMENT_NEGATIVE)
+            ->whereBetween('reviewed_at', [$recentFrom, $dateTo->endOfDay()])
+            ->count();
 
         return [
             'available' => true,
-            'total' => $reviews->count(),
-            'average_rating' => round((float) $reviews->avg('rating'), 1),
+            'total' => (int) ($summary?->aggregate ?? 0),
+            'average_rating' => round((float) ($summary?->average_rating ?? 0), 1),
             'positive' => (int) $counts->get(CustomerReview::SENTIMENT_POSITIVE, 0),
             'neutral' => (int) $counts->get(CustomerReview::SENTIMENT_NEUTRAL, 0),
             'negative' => (int) $counts->get(CustomerReview::SENTIMENT_NEGATIVE, 0),
-            'recent_negative' => $reviews->where('sentiment_label', CustomerReview::SENTIMENT_NEGATIVE)
-                ->filter(fn (CustomerReview $review): bool => $review->reviewed_at->betweenIncluded($recentFrom, $dateTo->endOfDay()))
-                ->count(),
+            'recent_negative' => $recentNegative,
         ];
     }
 
-    private function serviceKey(?Appointment $appointment): string
-    {
-        if ($appointment?->service_id) {
-            return 'service:'.$appointment->service_id;
+    /**
+     * @param  array<string, int|string|null>  $filters
+     * @return Collection<int, int>
+     */
+    private function matchingCustomerIds(
+        array $filters,
+        CarbonImmutable $dateFrom,
+        CarbonImmutable $dateTo,
+    ): Collection {
+        if (! $this->hasAppointmentRelationshipFilter($filters)) {
+            return collect();
         }
 
-        return 'snapshot:'.mb_strtolower($this->serviceName($appointment));
+        return $this->appointmentQuery($filters)
+            ->whereBetween('appointments.appointment_date', [$dateFrom->toDateString(), $dateTo->toDateString()])
+            ->whereNotNull('appointments.customer_profile_id')
+            ->distinct()
+            ->pluck('appointments.customer_profile_id')
+            ->map(fn (int|string $customerId): int => (int) $customerId)
+            ->values();
     }
 
-    /** @return array{service: string, appointment_count: int, completed_count: int, paid_transaction_count: int, revenue: float} */
-    private function emptyServiceRow(?Appointment $appointment): array
+    /** @param array<string, int|string|null> $filters */
+    private function hasAppointmentRelationshipFilter(array $filters): bool
+    {
+        return (bool) (($filters['service_id'] ?? null) || ($filters['therapist_profile_id'] ?? null));
+    }
+
+    private function serviceRowKey(?int $serviceId, string $service): string
+    {
+        if ($serviceId !== null) {
+            return 'service:'.$serviceId;
+        }
+
+        return 'snapshot:'.mb_strtolower($service);
+    }
+
+    /**
+     * @return array{service: string, appointment_count: int, completed_count: int, paid_transaction_count: int, revenue: float}
+     */
+    private function emptyServiceRowFromLabel(string $service): array
     {
         return [
-            'service' => $this->serviceName($appointment),
+            'service' => $service,
             'appointment_count' => 0,
             'completed_count' => 0,
             'paid_transaction_count' => 0,
             'revenue' => 0.0,
         ];
-    }
-
-    private function serviceName(?Appointment $appointment): string
-    {
-        return $appointment?->service_name_snapshot
-            ?: $appointment?->service?->name
-            ?: 'Service unavailable';
-    }
-
-    /** @param Collection<int, mixed> $records */
-    private function sumMoney(Collection $records, string $attribute): float
-    {
-        $cents = $records->sum(fn ($record): int => (int) round(((float) $record->{$attribute}) * 100));
-
-        return $cents / 100;
     }
 }

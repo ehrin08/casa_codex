@@ -45,6 +45,38 @@ class AppointmentVisibilityTest extends TestCase
             ->assertSee($target->service_name_snapshot);
     }
 
+    public function test_management_appointment_filter_pagination_preserves_query_string(): void
+    {
+        $manager = $this->createUser('management');
+        [, $customer] = $this->createCustomer('Filtered Page Customer');
+        [, $therapist] = $this->createTherapist('Filtered Page Therapist');
+        $date = now()->addDays(3)->toDateString();
+
+        foreach (range(1, 21) as $index) {
+            $this->createAppointment(
+                $customer,
+                $therapist,
+                'Filtered Page Service '.$index,
+                $date,
+                Appointment::STATUS_CONFIRMED,
+            );
+        }
+
+        $this->actingAs($manager)
+            ->get(route('management.appointments.index', [
+                'appointment_date' => $date,
+                'status' => Appointment::STATUS_CONFIRMED,
+                'therapist_profile_id' => $therapist->id,
+                'customer_profile_id' => $customer->id,
+            ]))
+            ->assertOk()
+            ->assertSee('appointment_date='.$date, false)
+            ->assertSee('status='.Appointment::STATUS_CONFIRMED, false)
+            ->assertSee('therapist_profile_id='.$therapist->id, false)
+            ->assertSee('customer_profile_id='.$customer->id, false)
+            ->assertSee('page=2', false);
+    }
+
     public function test_therapist_schedule_only_shows_their_assigned_appointments(): void
     {
         [$therapistUser, $therapistProfile] = $this->createTherapist('Schedule Owner');
@@ -83,6 +115,23 @@ class AppointmentVisibilityTest extends TestCase
 
         $this->get(route('customer.appointments.show', $upcoming))->assertOk();
         $this->get(route('customer.appointments.show', $other))->assertNotFound();
+    }
+
+    public function test_customer_appointment_paginators_preserve_each_other_page_query(): void
+    {
+        [$customerUser, $customerProfile] = $this->createCustomer('Pager Owner');
+        [, $therapist] = $this->createTherapist('Pager Therapist');
+
+        foreach (range(1, 11) as $index) {
+            $this->createAppointment($customerProfile, $therapist, 'Upcoming Pager '.$index, now()->addDays($index)->toDateString());
+            $this->createAppointment($customerProfile, $therapist, 'Past Pager '.$index, now()->subDays($index)->toDateString(), Appointment::STATUS_COMPLETED);
+        }
+
+        $this->actingAs($customerUser)
+            ->get(route('customer.appointments.index', ['past_page' => 2]))
+            ->assertOk()
+            ->assertSee('past_page=2', false)
+            ->assertSee('upcoming_page=2', false);
     }
 
     public function test_role_specific_appointment_views_remain_role_protected(): void
