@@ -25,6 +25,59 @@ class AppointmentScheduler
         string $appointmentTime,
         ?string $notes = null,
     ): Appointment {
+        return $this->scheduleAppointment(
+            $customerProfile,
+            $serviceId,
+            $therapistProfileId,
+            $appointmentDate,
+            $appointmentTime,
+            $notes,
+        );
+    }
+
+    public function scheduleWalkIn(
+        ?CustomerProfile $customerProfile,
+        int $serviceId,
+        int $therapistProfileId,
+        string $appointmentDate,
+        string $appointmentTime,
+        ?string $notes = null,
+        ?string $guestName = null,
+        ?string $guestContact = null,
+    ): Appointment {
+        if ($customerProfile === null && blank($guestName)) {
+            throw ValidationException::withMessages([
+                'guest_name' => 'The guest name field is required for walk-in guest appointments.',
+            ]);
+        }
+
+        return $this->scheduleAppointment(
+            $customerProfile,
+            $serviceId,
+            $therapistProfileId,
+            $appointmentDate,
+            $appointmentTime,
+            $notes,
+            [
+                'guest_name' => $customerProfile ? null : $guestName,
+                'guest_contact' => $customerProfile ? null : $guestContact,
+                'is_walk_in' => true,
+            ],
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $appointmentAttributes
+     */
+    private function scheduleAppointment(
+        ?CustomerProfile $customerProfile,
+        int $serviceId,
+        int $therapistProfileId,
+        string $appointmentDate,
+        string $appointmentTime,
+        ?string $notes = null,
+        array $appointmentAttributes = [],
+    ): Appointment {
         return DB::transaction(function () use (
             $customerProfile,
             $serviceId,
@@ -32,6 +85,7 @@ class AppointmentScheduler
             $appointmentDate,
             $appointmentTime,
             $notes,
+            $appointmentAttributes,
         ): Appointment {
             $service = Service::query()
                 ->whereKey($serviceId)
@@ -81,8 +135,8 @@ class AppointmentScheduler
                 ]);
             }
 
-            $appointment = Appointment::create([
-                'customer_profile_id' => $customerProfile->id,
+            $appointment = Appointment::create(array_merge([
+                'customer_profile_id' => $customerProfile?->id,
                 'therapist_profile_id' => $therapist->id,
                 'service_id' => $service->id,
                 'appointment_date' => $start->toDateString(),
@@ -93,7 +147,7 @@ class AppointmentScheduler
                 'service_duration_minutes_snapshot' => $service->duration_minutes,
                 'service_price_snapshot' => $service->price,
                 'notes' => $notes,
-            ]);
+            ], $appointmentAttributes));
 
             $this->notificationService->appointmentBooked($appointment);
 

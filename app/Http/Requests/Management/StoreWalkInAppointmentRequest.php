@@ -9,6 +9,13 @@ use Illuminate\Validation\Validator;
 
 class StoreWalkInAppointmentRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if (! $this->filled('customer_type') && $this->filled('customer_profile_id')) {
+            $this->merge(['customer_type' => 'existing']);
+        }
+    }
+
     public function authorize(): bool
     {
         return $this->user()?->isManagement() ?? false;
@@ -20,10 +27,24 @@ class StoreWalkInAppointmentRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'customer_type' => ['required', Rule::in(['existing', 'guest'])],
             'customer_profile_id' => [
+                'exclude_unless:customer_type,existing',
                 'required',
                 'integer',
                 Rule::exists('customer_profiles', 'id')->where('is_active', true),
+            ],
+            'guest_name' => [
+                'exclude_unless:customer_type,guest',
+                'required',
+                'string',
+                'max:255',
+            ],
+            'guest_contact' => [
+                'exclude_unless:customer_type,guest',
+                'nullable',
+                'string',
+                'max:30',
             ],
             'service_id' => [
                 'required',

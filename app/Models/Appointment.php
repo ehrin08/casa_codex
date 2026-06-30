@@ -35,6 +35,9 @@ class Appointment extends Model
 
     protected $fillable = [
         'customer_profile_id',
+        'guest_name',
+        'guest_contact',
+        'is_walk_in',
         'therapist_profile_id',
         'service_id',
         'appointment_date',
@@ -51,7 +54,45 @@ class Appointment extends Model
     protected $casts = [
         'appointment_date' => 'date',
         'service_price_snapshot' => 'decimal:2',
+        'is_walk_in' => 'boolean',
     ];
+
+    public function getCustomerDisplayNameAttribute(): string
+    {
+        if ($this->customerProfile) {
+            return trim($this->customerProfile->first_name.' '.$this->customerProfile->last_name)
+                ?: 'Customer unavailable';
+        }
+
+        if (filled($this->guest_name)) {
+            return $this->guest_name;
+        }
+
+        return $this->is_walk_in ? 'Walk-in Guest' : 'Customer unavailable';
+    }
+
+    public function getCustomerDisplayLabelAttribute(): ?string
+    {
+        if (! $this->is_walk_in) {
+            return null;
+        }
+
+        return $this->customer_profile_id ? 'Existing Customer' : 'Walk-in Guest';
+    }
+
+    public function getCustomerDisplayContactAttribute(): ?string
+    {
+        if ($this->customerProfile?->phone) {
+            return $this->customerProfile->phone;
+        }
+
+        return $this->guest_contact;
+    }
+
+    public function getIsWalkInGuestAttribute(): bool
+    {
+        return $this->is_walk_in && $this->customer_profile_id === null;
+    }
 
     public function customerProfile(): BelongsTo
     {

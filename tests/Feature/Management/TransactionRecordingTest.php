@@ -258,6 +258,45 @@ class TransactionRecordingTest extends TestCase
             ->assertSee('href="'.route('management.transactions.show', $transaction).'"', false);
     }
 
+    public function test_management_can_record_transaction_for_guest_walk_in_without_customer_profile(): void
+    {
+        $manager = $this->createUserWithRole('management');
+        $appointment = $this->createGuestWalkInAppointment();
+
+        $this->actingAs($manager)
+            ->get(route('management.transactions.create'))
+            ->assertOk()
+            ->assertSee('Guest Transaction Customer');
+
+        $this->get(route('management.transactions.create', ['appointment_id' => $appointment->id]))
+            ->assertOk()
+            ->assertSee('Walk-in Guest')
+            ->assertSee('Guest Transaction Customer')
+            ->assertSee('0999-111-222');
+
+        $response = $this->post(route('management.transactions.store'), [
+            'appointment_id' => $appointment->id,
+            'discount_amount' => '0.00',
+            'payment_status' => Transaction::STATUS_PAID,
+            'amount_tendered' => '850.00',
+            'transaction_date' => now()->format('Y-m-d H:i:s'),
+        ]);
+
+        $transaction = Transaction::sole();
+
+        $response
+            ->assertRedirect(route('management.transactions.show', $transaction))
+            ->assertSessionHas('success');
+        $this->assertNull($transaction->customer_profile_id);
+
+        $this->get(route('management.transactions.show', $transaction))
+            ->assertOk()
+            ->assertSee('Walk-in Guest')
+            ->assertSee('Guest Transaction Customer')
+            ->assertSee('0999-111-222');
+        $this->assertDatabaseCount('therapist_commissions', 1);
+    }
+
     public function test_management_can_confirm_pending_cash_payment_and_create_commission(): void
     {
         $recorder = $this->createUserWithRole('management');
@@ -390,6 +429,37 @@ class TransactionRecordingTest extends TestCase
             'payment_method' => Transaction::PAYMENT_METHOD_CASH,
             'payment_status' => Transaction::STATUS_PAID,
             'transaction_date' => now(),
+        ]);
+    }
+
+    private function createGuestWalkInAppointment(): Appointment
+    {
+        $therapist = TherapistProfile::create([
+            'first_name' => 'Guest',
+            'last_name' => 'Transaction Therapist',
+            'commission_rate' => 20,
+            'status' => 'active',
+        ]);
+        $service = Service::create([
+            'name' => 'Guest Transaction Service',
+            'duration_minutes' => 60,
+            'price' => 850,
+            'status' => 'active',
+        ]);
+
+        return Appointment::create([
+            'therapist_profile_id' => $therapist->id,
+            'service_id' => $service->id,
+            'appointment_date' => now()->toDateString(),
+            'start_time' => '10:00',
+            'end_time' => '11:00',
+            'status' => Appointment::STATUS_COMPLETED,
+            'service_name_snapshot' => $service->name,
+            'service_duration_minutes_snapshot' => $service->duration_minutes,
+            'service_price_snapshot' => $service->price,
+            'is_walk_in' => true,
+            'guest_name' => 'Guest Transaction Customer',
+            'guest_contact' => '0999-111-222',
         ]);
     }
 

@@ -19,12 +19,11 @@
                 @forelse ($transactions as $transaction)
                     @php
                         $appointment = $transaction->appointment;
-                        $customer = $appointment?->customerProfile;
                         $therapist = $appointment?->therapistProfile;
                     @endphp
                     <tr>
                         <td class="whitespace-nowrap"><p class="font-semibold text-cocoa-950">{{ $transaction->transaction_date->format('M j, Y') }}</p><p class="mt-1 text-xs text-cocoa-500">{{ $transaction->transaction_date->format('g:i A') }}</p></td>
-                        <td><p class="font-semibold text-cocoa-950">{{ $appointment ? '#'.$appointment->id : 'Appointment unavailable' }}</p><p class="mt-1 whitespace-nowrap text-xs text-cocoa-500">{{ $customer ? trim($customer->first_name.' '.$customer->last_name) : 'Customer unavailable' }}</p></td>
+                        <td><p class="font-semibold text-cocoa-950">{{ $appointment ? '#'.$appointment->id : 'Appointment unavailable' }}</p><p class="mt-1 whitespace-nowrap text-xs text-cocoa-500">{{ $appointment?->customer_display_name ?? 'Customer unavailable' }}</p></td>
                         <td class="text-cocoa-600">{{ $therapist ? trim($therapist->first_name.' '.$therapist->last_name) : 'Unavailable' }}</td>
                         <td class="text-cocoa-600">{{ $appointment?->service_name_snapshot ?: $appointment?->service?->name ?: 'Unavailable' }}</td>
                         <td class="whitespace-nowrap text-cocoa-600">PHP {{ number_format((float) $transaction->subtotal, 2) }}</td>

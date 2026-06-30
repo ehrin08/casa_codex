@@ -37,7 +37,14 @@ class WalkInAppointmentBookingTest extends TestCase
             ->assertDontSee($inactiveService->name)
             ->assertSee($activeTherapist->first_name)
             ->assertDontSee($inactiveTherapist->first_name)
-            ->assertSee(route('management.customers.create'))
+            ->assertSee('Customer Type')
+            ->assertSee('Existing Customer')
+            ->assertSee('Walk-in Guest')
+            ->assertSee('Use this for guests who do not need an online account.')
+            ->assertSee('Guest Name')
+            ->assertSee('Guest Contact Number')
+            ->assertSee('Walk-in Notes')
+            ->assertSee('Book Walk-in Appointment')
             ->assertSee('data-appointment-booking-form', false);
 
         $this->get(route('management.index'))
@@ -56,7 +63,7 @@ class WalkInAppointmentBookingTest extends TestCase
         $this->from(route('management.appointments.index'))
             ->post(route('management.walk-ins.store'), ['_modal' => 'walk-in-create'])
             ->assertRedirect(route('management.appointments.index'))
-            ->assertSessionHasErrors(['customer_profile_id', 'service_id', 'therapist_profile_id', 'appointment_date', 'appointment_time']);
+            ->assertSessionHasErrors(['customer_type', 'service_id', 'therapist_profile_id', 'appointment_date', 'appointment_time']);
 
         $this->get(route('management.appointments.index'))
             ->assertOk()
@@ -66,11 +73,21 @@ class WalkInAppointmentBookingTest extends TestCase
     public function test_guest_customer_and_therapist_cannot_access_walk_in_booking(): void
     {
         $this->get(route('management.walk-ins.create'))->assertRedirect('/login');
+        $this->getJson(route('management.walk-ins.slots'))->assertUnauthorized();
+        $this->post(route('management.walk-ins.store'), [
+            'customer_type' => 'guest',
+            'guest_name' => 'Unauthorized Guest',
+        ])->assertRedirect('/login');
 
         foreach (['customer', 'therapist'] as $role) {
             $this->actingAs($this->createUser($role))
                 ->get(route('management.walk-ins.create'))
                 ->assertForbidden();
+            $this->getJson(route('management.walk-ins.slots'))->assertForbidden();
+            $this->post(route('management.walk-ins.store'), [
+                'customer_type' => 'guest',
+                'guest_name' => 'Unauthorized Guest',
+            ])->assertForbidden();
         }
     }
 
@@ -107,6 +124,7 @@ class WalkInAppointmentBookingTest extends TestCase
         $this->createAvailability($therapist, $date, '12:00', '17:00');
 
         $response = $this->actingAs($manager)->post(route('management.walk-ins.store'), [
+            'customer_type' => 'existing',
             'customer_profile_id' => $customer->id,
             'service_id' => $service->id,
             'therapist_profile_id' => $therapist->id,
@@ -121,6 +139,9 @@ class WalkInAppointmentBookingTest extends TestCase
             ->assertRedirect(route('management.appointments.show', $appointment))
             ->assertSessionHas('success', 'Walk-in appointment was created successfully.');
         $this->assertSame($customer->id, $appointment->customer_profile_id);
+        $this->assertTrue($appointment->is_walk_in);
+        $this->assertNull($appointment->guest_name);
+        $this->assertNull($appointment->guest_contact);
         $this->assertSame(Appointment::STATUS_PENDING, $appointment->status);
         $this->assertSame(
             'Walk-in booking created by Front Desk Staff.'.PHP_EOL.'Guest prefers light pressure.',
@@ -140,6 +161,108 @@ class WalkInAppointmentBookingTest extends TestCase
             ->assertSee('Walk-in booking created by Front Desk Staff.');
     }
 
+    public function test_staff_can_create_guest_walk_in_without_account_or_customer_profile_visible_to_management_and_therapist(): void
+    {
+        $this->travelTo(Carbon::parse('2026-06-22 10:15:00'));
+        $manager = $this->createUser('management', 'Front Desk Staff');
+        $therapistUser = $this->createUser('therapist', 'Guest Therapist User');
+        $service = $this->createService('Guest Hilot', duration: 60);
+        $therapist = $this->createTherapist('Guest', 'Therapist', user: $therapistUser);
+        $date = today()->toDateString();
+        $this->createAvailability($therapist, $date, '12:00', '17:00');
+        $userCount = User::count();
+
+        $response = $this->actingAs($manager)->post(route('management.walk-ins.store'), [
+            'customer_type' => 'guest',
+            'guest_name' => 'Lina Cruz',
+            'guest_contact' => '0917-555-0199',
+            'service_id' => $service->id,
+            'therapist_profile_id' => $therapist->id,
+            'appointment_date' => $date,
+            'appointment_time' => '13:00',
+            'notes' => 'Guest prefers a quiet room.',
+        ]);
+
+        $appointment = Appointment::firstOrFail();
+
+        $response
+            ->assertRedirect(route('management.appointments.show', $appointment))
+            ->assertSessionHas('success', 'Walk-in appointment was created successfully.');
+        $this->assertNull($appointment->customer_profile_id);
+        $this->assertSame('Lina Cruz', $appointment->guest_name);
+        $this->assertSame('0917-555-0199', $appointment->guest_contact);
+        $this->assertTrue($appointment->is_walk_in);
+        $this->assertSame('Walk-in Guest', $appointment->customer_display_label);
+        $this->assertSame('Lina Cruz', $appointment->customer_display_name);
+        $this->assertSame('0917-555-0199', $appointment->customer_display_contact);
+        $this->assertDatabaseCount('customer_profiles', 0);
+        $this->assertSame($userCount, User::count());
+        $this->assertSame(
+            'Walk-in booking created by Front Desk Staff.'.PHP_EOL.'Guest prefers a quiet room.',
+            $appointment->notes,
+        );
+
+        $this->get(route('management.appointments.index'))
+            ->assertOk()
+            ->assertSee('Guest Hilot')
+            ->assertSee('Walk-in Guest')
+            ->assertSee('Lina Cruz')
+            ->assertSee('0917-555-0199');
+
+        $this->get(route('management.appointments.show', $appointment))
+            ->assertOk()
+            ->assertSee('Walk-in Guest')
+            ->assertSee('Lina Cruz')
+            ->assertSee('0917-555-0199')
+            ->assertSee('Appointment notes')
+            ->assertSee('Guest prefers a quiet room.');
+
+        $this->actingAs($therapistUser)
+            ->get(route('therapist.schedule.index'))
+            ->assertOk()
+            ->assertSee('Guest Hilot')
+            ->assertSee('Walk-in Guest')
+            ->assertSee('Lina Cruz')
+            ->assertSee('Walk-in booking created by Front Desk Staff.');
+
+        $this->get(route('therapist.appointments.show', $appointment))
+            ->assertOk()
+            ->assertSee('Walk-in Guest')
+            ->assertSee('Lina Cruz')
+            ->assertSee('0917-555-0199');
+    }
+
+    public function test_guest_name_is_required_and_guest_contact_is_optional(): void
+    {
+        $manager = $this->createUser('management');
+        $service = $this->createService(duration: 60);
+        $therapist = $this->createTherapist();
+        $date = now()->addDay()->toDateString();
+        $this->createAvailability($therapist, $date, '09:00', '13:00');
+
+        $base = [
+            'customer_type' => 'guest',
+            'service_id' => $service->id,
+            'therapist_profile_id' => $therapist->id,
+            'appointment_date' => $date,
+            'appointment_time' => '09:00',
+        ];
+
+        $this->actingAs($manager)
+            ->post(route('management.walk-ins.store'), $base)
+            ->assertSessionHasErrors('guest_name');
+
+        $this->post(route('management.walk-ins.store'), $base + ['guest_name' => 'No Contact Guest'])
+            ->assertSessionHasNoErrors();
+
+        $appointment = Appointment::firstOrFail();
+        $this->assertNull($appointment->customer_profile_id);
+        $this->assertSame('No Contact Guest', $appointment->guest_name);
+        $this->assertNull($appointment->guest_contact);
+        $this->assertTrue($appointment->is_walk_in);
+        $this->assertDatabaseCount('customer_profiles', 0);
+    }
+
     public function test_inactive_customer_service_and_therapist_are_rejected(): void
     {
         $manager = $this->createUser('management');
@@ -152,6 +275,7 @@ class WalkInAppointmentBookingTest extends TestCase
         $date = now()->addDay()->toDateString();
 
         $base = [
+            'customer_type' => 'existing',
             'customer_profile_id' => $activeCustomer->id,
             'service_id' => $activeService->id,
             'therapist_profile_id' => $activeTherapist->id,
@@ -177,14 +301,14 @@ class WalkInAppointmentBookingTest extends TestCase
     public function test_tampered_and_overlapping_slots_are_rejected(): void
     {
         $manager = $this->createUser('management');
-        $customer = $this->createCustomer();
         $service = $this->createService(duration: 60);
         $therapist = $this->createTherapist();
         $date = now()->addDay()->toDateString();
         $this->createAvailability($therapist, $date, '09:00', '13:00');
 
         $base = [
-            'customer_profile_id' => $customer->id,
+            'customer_type' => 'guest',
+            'guest_name' => 'Slot Guest',
             'service_id' => $service->id,
             'therapist_profile_id' => $therapist->id,
             'appointment_date' => $date,

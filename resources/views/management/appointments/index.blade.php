@@ -30,7 +30,11 @@
                 @forelse ($appointments as $appointment)
                     <tr>
                         <td class="font-bold text-cocoa-950">#{{ $appointment->id }}</td>
-                        <td class="text-cocoa-700">{{ $appointment->customerProfile ? trim($appointment->customerProfile->first_name.' '.$appointment->customerProfile->last_name) : 'Customer unavailable' }}</td>
+                        <td>
+                            @if ($appointment->customer_display_label)<p class="text-xs font-bold uppercase tracking-wide text-sage-700">{{ $appointment->customer_display_label }}</p>@endif
+                            <p class="font-semibold text-cocoa-900">{{ $appointment->customer_display_name }}</p>
+                            @if ($appointment->customer_display_contact)<p class="mt-1 text-xs text-cocoa-500">{{ $appointment->customer_display_contact }}</p>@endif
+                        </td>
                         <td class="text-cocoa-700">{{ $appointment->service_name_snapshot ?: 'Service unavailable' }}</td>
                         <td class="text-cocoa-700">{{ $appointment->therapistProfile ? trim($appointment->therapistProfile->first_name.' '.$appointment->therapistProfile->last_name) : 'Therapist unavailable' }}</td>
                         <td class="whitespace-nowrap text-cocoa-600">{{ $appointment->appointment_date->format('M j, Y') }}<p class="mt-1 text-xs text-cocoa-500">{{ date('g:i A', strtotime($appointment->start_time)) }} to {{ date('g:i A', strtotime($appointment->end_time)) }}</p></td>

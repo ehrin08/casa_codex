@@ -12,14 +12,21 @@
             <x-card>
                 <div class="flex flex-wrap items-center justify-between gap-3 border-b border-cream-200 pb-5"><div><p class="text-xs font-bold uppercase tracking-[0.16em] text-sage-700">Booking record</p><h2 class="mt-1 text-lg font-semibold text-cocoa-950">Appointment details</h2></div><x-status-badge :status="$appointment->status" class="px-3 py-1.5" /></div>
                 <dl class="mt-6 grid gap-x-8 gap-y-6 sm:grid-cols-2">
-                    <div><dt class="spa-detail-label">Customer</dt><dd class="spa-detail-value">{{ $appointment->customerProfile ? trim($appointment->customerProfile->first_name.' '.$appointment->customerProfile->last_name) : 'Customer unavailable' }}</dd></div>
+                    <div>
+                        <dt class="spa-detail-label">Customer</dt>
+                        <dd class="spa-detail-value">
+                            @if ($appointment->customer_display_label)<span class="mb-1 block text-xs font-bold uppercase tracking-wide text-sage-700">{{ $appointment->customer_display_label }}</span>@endif
+                            {{ $appointment->customer_display_name }}
+                            @if ($appointment->customer_display_contact)<span class="mt-1 block text-sm font-medium text-cocoa-500">{{ $appointment->customer_display_contact }}</span>@endif
+                        </dd>
+                    </div>
                     <div><dt class="spa-detail-label">Therapist</dt><dd class="spa-detail-value">{{ $appointment->therapistProfile ? trim($appointment->therapistProfile->first_name.' '.$appointment->therapistProfile->last_name) : 'Therapist unavailable' }}</dd></div>
                     <div><dt class="spa-detail-label">Service</dt><dd class="spa-detail-value">{{ $appointment->service_name_snapshot ?: 'Service unavailable' }}</dd></div>
                     <div><dt class="spa-detail-label">Price snapshot</dt><dd class="spa-detail-value">PHP {{ number_format((float) $appointment->service_price_snapshot, 2) }}</dd></div>
                     <div><dt class="spa-detail-label">Date</dt><dd class="spa-detail-value">{{ $appointment->appointment_date->format('F j, Y') }}</dd></div>
                     <div><dt class="spa-detail-label">Time</dt><dd class="spa-detail-value">{{ date('g:i A', strtotime($appointment->start_time)) }} to {{ date('g:i A', strtotime($appointment->end_time)) }}</dd></div>
                     <div><dt class="spa-detail-label">Duration</dt><dd class="spa-detail-value">{{ $appointment->service_duration_minutes_snapshot }} minutes</dd></div>
-                    @if ($appointment->notes)<div class="sm:col-span-2"><dt class="spa-detail-label">Customer notes</dt><dd class="mt-1.5 whitespace-pre-line leading-6 text-cocoa-800">{{ $appointment->notes }}</dd></div>@endif
+                    @if ($appointment->notes)<div class="sm:col-span-2"><dt class="spa-detail-label">Appointment notes</dt><dd class="mt-1.5 whitespace-pre-line leading-6 text-cocoa-800">{{ $appointment->notes }}</dd></div>@endif
                 </dl>
             </x-card>
 

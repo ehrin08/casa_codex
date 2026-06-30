@@ -16,7 +16,13 @@
                 <div><dt class="spa-detail-label">Therapist</dt><dd class="spa-detail-value">{{ $therapist ? trim($therapist->first_name.' '.$therapist->last_name) : ($commission->therapistUser?->name ?? 'Therapist unavailable') }}</dd></div>
                 <div><dt class="spa-detail-label">Transaction date</dt><dd class="spa-detail-value">{{ $commission->transaction?->transaction_date?->format('F j, Y g:i A') ?? 'Unavailable' }}</dd></div>
                 <div><dt class="spa-detail-label">Appointment</dt><dd class="spa-detail-value">{{ $commission->appointment ? '#'.$commission->appointment->id : 'Unavailable' }}</dd></div>
-                <div><dt class="spa-detail-label">Customer</dt><dd class="spa-detail-value">{{ $commission->appointment?->customerProfile ? trim($commission->appointment->customerProfile->first_name.' '.$commission->appointment->customerProfile->last_name) : 'Customer unavailable' }}</dd></div>
+                <div>
+                    <dt class="spa-detail-label">Customer</dt>
+                    <dd class="spa-detail-value">
+                        @if ($commission->appointment?->customer_display_label)<span class="mb-1 block text-xs font-bold uppercase tracking-wide text-sage-700">{{ $commission->appointment->customer_display_label }}</span>@endif
+                        {{ $commission->appointment?->customer_display_name ?? 'Customer unavailable' }}
+                    </dd>
+                </div>
                 <div><dt class="spa-detail-label">Service</dt><dd class="spa-detail-value">{{ $commission->appointment?->service_name_snapshot ?: $commission->appointment?->service?->name ?: 'Service unavailable' }}</dd></div>
                 <div><dt class="spa-detail-label">Paid at</dt><dd class="spa-detail-value">{{ $commission->paid_at?->format('F j, Y g:i A') ?? 'Not yet settled' }}</dd></div>
             </dl>

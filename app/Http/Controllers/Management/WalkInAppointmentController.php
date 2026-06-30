@@ -67,23 +67,29 @@ class WalkInAppointmentController extends Controller
         AppointmentScheduler $scheduler,
     ): RedirectResponse {
         $validated = $request->validated();
-        $customer = CustomerProfile::query()
-            ->whereKey($validated['customer_profile_id'])
-            ->where('is_active', true)
-            ->firstOrFail();
+        $customer = null;
+
+        if ($validated['customer_type'] === 'existing') {
+            $customer = CustomerProfile::query()
+                ->whereKey($validated['customer_profile_id'])
+                ->where('is_active', true)
+                ->firstOrFail();
+        }
 
         $context = 'Walk-in booking created by '.$request->user()->name.'.';
         $notes = filled($validated['notes'] ?? null)
             ? $context.PHP_EOL.$validated['notes']
             : $context;
 
-        $appointment = $scheduler->schedule(
+        $appointment = $scheduler->scheduleWalkIn(
             $customer,
             $validated['service_id'],
             $validated['therapist_profile_id'],
             $validated['appointment_date'],
             $validated['appointment_time'],
             $notes,
+            $validated['guest_name'] ?? null,
+            $validated['guest_contact'] ?? null,
         );
 
         return redirect()

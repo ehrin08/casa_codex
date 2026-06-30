@@ -54,6 +54,37 @@ class AppointmentBookingTest extends TestCase
         }
     }
 
+    public function test_customer_booking_still_requires_a_linked_customer_profile_and_is_not_a_guest_path(): void
+    {
+        $customer = $this->createUserWithRole('customer');
+        $service = $this->createService('Guest Attempt Service');
+        $therapist = $this->createTherapist('Guest', 'Attempt');
+        $appointmentDate = now()->addDay()->toDateString();
+        TherapistAvailability::create([
+            'therapist_profile_id' => $therapist->id,
+            'availability_date' => $appointmentDate,
+            'start_time' => '09:00',
+            'end_time' => '17:00',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($customer)
+            ->get(route('customer.appointments.create'))
+            ->assertForbidden();
+
+        $this->post(route('customer.appointments.store'), [
+            'customer_type' => 'guest',
+            'guest_name' => 'Public Guest Attempt',
+            'service_id' => $service->id,
+            'therapist_profile_id' => $therapist->id,
+            'appointment_date' => $appointmentDate,
+            'appointment_time' => '10:00',
+        ])->assertForbidden();
+
+        $this->assertDatabaseCount('appointments', 0);
+        $this->assertDatabaseCount('customer_profiles', 0);
+    }
+
     public function test_customer_can_create_a_valid_pending_appointment_with_service_snapshots(): void
     {
         [$customer, $customerProfile] = $this->createCustomer();

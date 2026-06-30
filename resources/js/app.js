@@ -152,6 +152,48 @@ document.querySelectorAll('[data-modal]').forEach((modal) => {
     }
 });
 
+const setupCustomerTypeChooser = (form) => {
+    const options = [...form.querySelectorAll('[data-customer-type-option]')];
+    const panels = [...form.querySelectorAll('[data-customer-type-panel]')];
+    const conditionalRequiredFields = [...form.querySelectorAll('[data-customer-type-required]')];
+
+    if (options.length === 0) {
+        return;
+    }
+
+    const update = () => {
+        const selected = options.find((option) => option.checked)?.value ?? 'guest';
+
+        options.forEach((option) => {
+            const label = option.closest('label');
+            const isSelected = option.value === selected;
+
+            label?.classList.toggle('border-sage-400', isSelected);
+            label?.classList.toggle('ring-2', isSelected);
+            label?.classList.toggle('ring-sage-100', isSelected);
+            label?.classList.toggle('border-cream-300', !isSelected);
+        });
+
+        panels.forEach((panel) => {
+            const isActive = panel.dataset.customerTypePanel === selected;
+            panel.classList.toggle('hidden', !isActive);
+
+            panel.querySelectorAll('input, select, textarea').forEach((field) => {
+                field.disabled = !isActive;
+            });
+        });
+
+        conditionalRequiredFields.forEach((field) => {
+            field.required = field.dataset.customerTypeRequired === selected;
+        });
+    };
+
+    options.forEach((option) => option.addEventListener('change', update));
+    update();
+};
+
+document.querySelectorAll('[data-appointment-booking-form]').forEach(setupCustomerTypeChooser);
+
 const bookingForm = document.querySelector('[data-appointment-booking-form]');
 
 if (bookingForm) {

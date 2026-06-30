@@ -13,7 +13,6 @@
     @if ($selectedAppointment)
         @php
             $subtotal = $selectedAppointment->service_price_snapshot ?? $selectedAppointment->service?->price;
-            $customer = $selectedAppointment->customerProfile;
             $therapist = $selectedAppointment->therapistProfile;
         @endphp
         <div class="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] lg:items-start">
@@ -82,7 +81,14 @@
                 <x-card>
                     <div class="flex items-center justify-between gap-3 border-b border-cream-200 pb-4"><h2 class="font-semibold text-cocoa-950">Appointment summary</h2><x-status-badge :status="$selectedAppointment->status" /></div>
                     <dl class="mt-5 space-y-4">
-                        <div><dt class="spa-detail-label">Customer</dt><dd class="spa-detail-value">{{ $customer ? trim($customer->first_name.' '.$customer->last_name) : 'Customer unavailable' }}</dd></div>
+                        <div>
+                            <dt class="spa-detail-label">Customer</dt>
+                            <dd class="spa-detail-value">
+                                @if ($selectedAppointment->customer_display_label)<span class="mb-1 block text-xs font-bold uppercase tracking-wide text-sage-700">{{ $selectedAppointment->customer_display_label }}</span>@endif
+                                {{ $selectedAppointment->customer_display_name }}
+                                @if ($selectedAppointment->customer_display_contact)<span class="mt-1 block text-sm font-medium text-cocoa-500">{{ $selectedAppointment->customer_display_contact }}</span>@endif
+                            </dd>
+                        </div>
                         <div><dt class="spa-detail-label">Service</dt><dd class="spa-detail-value">{{ $selectedAppointment->service_name_snapshot ?: $selectedAppointment->service?->name ?: 'Service unavailable' }}</dd></div>
                         <div><dt class="spa-detail-label">Therapist</dt><dd class="spa-detail-value">{{ $therapist ? trim($therapist->first_name.' '.$therapist->last_name) : 'Therapist unavailable' }}</dd></div>
                         <div class="grid grid-cols-2 gap-4"><div><dt class="spa-detail-label">Appointment date</dt><dd class="spa-detail-value">{{ $selectedAppointment->appointment_date->format('M j, Y') }}</dd></div><div><dt class="spa-detail-label">Time</dt><dd class="spa-detail-value">{{ date('g:i A', strtotime($selectedAppointment->start_time)) }}</dd></div></div>
@@ -104,7 +110,7 @@
                         @endphp
                         <tr>
                             <td class="font-bold text-cocoa-950">#{{ $appointment->id }}</td>
-                            <td class="text-cocoa-600">{{ $appointment->customerProfile ? trim($appointment->customerProfile->first_name.' '.$appointment->customerProfile->last_name) : 'Unavailable' }}</td>
+                            <td class="text-cocoa-600">@if ($appointment->customer_display_label)<span class="block text-xs font-bold uppercase tracking-wide text-sage-700">{{ $appointment->customer_display_label }}</span>@endif {{ $appointment->customer_display_name }}</td>
                             <td class="text-cocoa-600">{{ $appointment->service_name_snapshot ?: $appointment->service?->name ?: 'Unavailable' }}</td>
                             <td class="text-cocoa-600">{{ $appointment->therapistProfile ? trim($appointment->therapistProfile->first_name.' '.$appointment->therapistProfile->last_name) : 'Unavailable' }}</td>
                             <td class="whitespace-nowrap text-cocoa-600">{{ $appointment->appointment_date->format('M j, Y') }}<p class="mt-1 text-xs text-cocoa-500">{{ date('g:i A', strtotime($appointment->start_time)) }}</p></td>

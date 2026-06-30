@@ -11,10 +11,10 @@
         @include('management.walk-ins._form', ['formIdPrefix' => 'walk-in-page'])
 
         <aside class="space-y-5 lg:sticky lg:top-28">
-            <x-alert type="info" title="Walk-in record">The appointment is created as pending and includes your staff name in the appointment notes for a clear audit trail.</x-alert>
+            <x-alert type="info" title="Walk-in record">The appointment is created as pending, marked as walk-in, and includes your staff name in the appointment notes for a clear audit trail.</x-alert>
             <x-card>
                 <h2 class="font-semibold text-cocoa-950">Before booking</h2>
-                <p class="mt-3 text-sm leading-6 text-cocoa-500">Confirm the guest profile, service duration, therapist, and selected time. Availability is checked again when the form is submitted.</p>
+                <p class="mt-3 text-sm leading-6 text-cocoa-500">Choose whether to link an existing customer or record guest details directly on the appointment. Availability is checked again when the form is submitted.</p>
             </x-card>
         </aside>
     </div>

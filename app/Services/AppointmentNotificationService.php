@@ -11,9 +11,9 @@ class AppointmentNotificationService
     public function appointmentBooked(Appointment $appointment): void
     {
         $appointment->loadMissing(['customerProfile', 'therapistProfile.user']);
-        $customerName = $appointment->customerProfile
-            ? trim($appointment->customerProfile->first_name.' '.$appointment->customerProfile->last_name)
-            : 'A customer';
+        $customerName = $appointment->customer_display_name === 'Customer unavailable'
+            ? 'A customer'
+            : $appointment->customer_display_name;
         $schedule = $this->scheduleDescription($appointment);
 
         User::query()

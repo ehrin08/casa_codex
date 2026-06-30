@@ -127,12 +127,14 @@
                         @php
                             $appointment = $transaction->appointment;
                             $customer = $appointment?->customerProfile ?: $transaction->customerProfile;
+                            $customerName = $appointment?->customer_display_name
+                                ?? ($customer ? trim($customer->first_name.' '.$customer->last_name) : 'Customer unavailable');
                             $therapist = $appointment?->therapistProfile;
                         @endphp
                         <tr>
                             <td class="whitespace-nowrap"><p class="font-semibold text-cocoa-950">{{ $transaction->transaction_date->format('M j, Y') }}</p><p class="mt-1 text-xs text-cocoa-500">{{ $transaction->transaction_date->format('g:i A') }}</p></td>
                             <td class="font-bold text-cocoa-950">#{{ $transaction->id }}</td>
-                            <td><p class="font-semibold text-cocoa-900">{{ $appointment ? '#'.$appointment->id : 'Appointment unavailable' }}</p><p class="mt-1 whitespace-nowrap text-xs text-cocoa-500">{{ $customer ? trim($customer->first_name.' '.$customer->last_name) : 'Customer unavailable' }}</p></td>
+                            <td><p class="font-semibold text-cocoa-900">{{ $appointment ? '#'.$appointment->id : 'Appointment unavailable' }}</p><p class="mt-1 whitespace-nowrap text-xs text-cocoa-500">{{ $customerName }}</p></td>
                             <td class="text-cocoa-700">{{ $therapist ? trim($therapist->first_name.' '.$therapist->last_name) : 'Therapist unavailable' }}</td>
                             <td class="text-cocoa-700">{{ $appointment?->service_name_snapshot ?: $appointment?->service?->name ?: 'Service unavailable' }}</td>
                             <td class="whitespace-nowrap text-cocoa-700">{{ $money($transaction->subtotal) }}</td>
@@ -159,12 +161,14 @@
                         @php
                             $commissionTherapist = $commission->therapistProfile ? trim($commission->therapistProfile->first_name.' '.$commission->therapistProfile->last_name) : ($commission->therapistUser?->name ?: 'Therapist unavailable.');
                             $commissionCustomer = $commission->appointment?->customerProfile;
+                            $commissionCustomerName = $commission->appointment?->customer_display_name
+                                ?? ($commissionCustomer ? trim($commissionCustomer->first_name.' '.$commissionCustomer->last_name) : 'Customer unavailable');
                         @endphp
                         <tr>
                             <td class="font-bold text-cocoa-950">#{{ $commission->id }}</td>
                             <td class="text-cocoa-700">{{ $commissionTherapist }}</td>
                             <td class="whitespace-nowrap text-cocoa-700">{{ $commission->transaction?->transaction_date?->format('M j, Y') ?? 'Unavailable' }}</td>
-                            <td><p class="font-semibold text-cocoa-900">{{ $commission->appointment ? '#'.$commission->appointment->id : 'Appointment unavailable' }}</p><p class="mt-1 whitespace-nowrap text-xs text-cocoa-500">{{ $commissionCustomer ? trim($commissionCustomer->first_name.' '.$commissionCustomer->last_name) : 'Customer unavailable' }}</p></td>
+                            <td><p class="font-semibold text-cocoa-900">{{ $commission->appointment ? '#'.$commission->appointment->id : 'Appointment unavailable' }}</p><p class="mt-1 whitespace-nowrap text-xs text-cocoa-500">{{ $commissionCustomerName }}</p></td>
                             <td class="whitespace-nowrap text-cocoa-700">{{ $money($commission->commission_base_amount) }}</td>
                             <td class="whitespace-nowrap text-cocoa-700">{{ number_format((float) $commission->commission_rate, 2) }}%</td>
                             <td class="whitespace-nowrap font-semibold text-cocoa-950">{{ $money($commission->commission_amount) }}</td>

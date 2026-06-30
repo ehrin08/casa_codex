@@ -8,6 +8,8 @@
     @php
         $appointment = $transaction->appointment;
         $customer = $appointment?->customerProfile ?? $transaction->customerProfile;
+        $customerName = $appointment?->customer_display_name
+            ?? ($customer ? trim($customer->first_name.' '.$customer->last_name) : 'Customer unavailable');
         $therapist = $appointment?->therapistProfile;
         $promotionUsage = $transaction->promotionUsage;
     @endphp
@@ -30,7 +32,14 @@
                 <div class="flex flex-wrap items-center justify-between gap-4 border-b border-dashed border-cream-300 pb-6"><div><p class="spa-detail-label">Transaction date</p><p class="mt-1 font-semibold text-cocoa-900">{{ $transaction->transaction_date->format('F j, Y g:i A') }}</p></div><x-status-badge :status="$transaction->payment_status" class="px-3 py-1.5" /></div>
 
                 <dl class="grid gap-x-8 gap-y-6 border-b border-dashed border-cream-300 py-7 sm:grid-cols-2">
-                    <div><dt class="spa-detail-label">Customer</dt><dd class="spa-detail-value">{{ $customer ? trim($customer->first_name.' '.$customer->last_name) : 'Customer unavailable' }}</dd></div>
+                    <div>
+                        <dt class="spa-detail-label">Customer</dt>
+                        <dd class="spa-detail-value">
+                            @if ($appointment?->customer_display_label)<span class="mb-1 block text-xs font-bold uppercase tracking-wide text-sage-700">{{ $appointment->customer_display_label }}</span>@endif
+                            {{ $customerName }}
+                            @if ($appointment?->customer_display_contact)<span class="mt-1 block text-sm font-medium text-cocoa-500">{{ $appointment->customer_display_contact }}</span>@endif
+                        </dd>
+                    </div>
                     <div><dt class="spa-detail-label">Cashier</dt><dd class="spa-detail-value">{{ $transaction->cashier?->name ?? 'Cashier unavailable' }}</dd></div>
                     <div><dt class="spa-detail-label">Service</dt><dd class="spa-detail-value">{{ $appointment?->service_name_snapshot ?: $appointment?->service?->name ?: 'Service unavailable' }}</dd></div>
                     <div><dt class="spa-detail-label">Therapist</dt><dd class="spa-detail-value">{{ $therapist ? trim($therapist->first_name.' '.$therapist->last_name) : 'Therapist unavailable' }}</dd></div>
