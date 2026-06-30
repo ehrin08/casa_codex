@@ -132,7 +132,10 @@
                                 <span class="block text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-sage-700">Body and Wellness Spa</span>
                             </span>
                         </a>
-                        <x-button :href="route('login')">Log in</x-button>
+                        <div class="flex items-center gap-2">
+                            <x-button :href="route('register')" variant="secondary">Register</x-button>
+                            <x-button :href="route('login')">Log in</x-button>
+                        </div>
                     </div>
                 </header>
             @endauth

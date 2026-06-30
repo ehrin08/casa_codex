@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\EmailVerificationController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Customer\AppointmentBookingController;
 use App\Http\Controllers\Customer\AppointmentController as CustomerAppointmentController;
 use App\Http\Controllers\Customer\AppointmentReviewController;
@@ -30,9 +32,20 @@ Route::view('/', 'welcome')->name('home');
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
+    Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
+    Route::post('/register', [RegisteredUserController::class, 'store'])->name('register.store');
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('/email/verify', [EmailVerificationController::class, 'notice'])
+        ->name('verification.notice');
+    Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('verification.verify');
+    Route::post('/email/verification-notification', [EmailVerificationController::class, 'send'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
+
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
@@ -117,7 +130,7 @@ Route::middleware('auth')->group(function () {
         Route::get('commissions/{commission}', [TherapistCommissionViewController::class, 'show'])
             ->name('commissions.show');
     });
-    Route::prefix('customer')->name('customer.')->middleware('role:customer')->group(function () {
+    Route::prefix('customer')->name('customer.')->middleware(['role:customer', 'verified'])->group(function () {
         Route::view('/', 'customer.index')->name('index');
         Route::get('book-appointment', [AppointmentBookingController::class, 'create'])
             ->name('appointments.create');

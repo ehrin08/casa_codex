@@ -35,7 +35,10 @@
                     <x-button type="submit" class="mt-2 w-full">Log in securely</x-button>
                 </form>
 
-                <p class="mt-8 border-t border-cream-200 pt-5 text-center text-xs leading-5 text-cocoa-500">Access is limited to authorized management, therapist, and customer accounts.</p>
+                <p class="mt-8 border-t border-cream-200 pt-5 text-center text-sm leading-6 text-cocoa-500">
+                    Need a customer account?
+                    <a href="{{ route('register') }}" class="font-semibold text-sage-700 transition hover:text-sage-800">Register as a customer</a>
+                </p>
             </div>
         </div>
     </div>

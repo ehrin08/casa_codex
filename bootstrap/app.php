@@ -5,6 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -22,5 +23,15 @@ return Application::configure(basePath: dirname(__DIR__))
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (InvalidSignatureException $exception, Request $request) {
+            if ($request->routeIs('verification.verify')) {
+                return redirect()
+                    ->route('verification.notice')
+                    ->withErrors([
+                        'verification' => 'That verification link is invalid or has expired. Please send a new verification link.',
+                    ]);
+            }
+
+            return null;
+        });
     })->create();

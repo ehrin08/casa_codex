@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Management;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\CustomerProfileRequest;
 use App\Models\CustomerProfile;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class CustomerProfileController extends Controller
@@ -38,11 +40,21 @@ class CustomerProfileController extends Controller
 
     public function store(CustomerProfileRequest $request): RedirectResponse
     {
-        CustomerProfile::create($request->validated());
+        $createsAccount = $request->boolean('create_account');
+
+        DB::transaction(function () use ($request, $createsAccount): void {
+            $data = $request->profileData();
+
+            if ($createsAccount) {
+                $data['user_id'] = $this->createCustomerAccount($data, $request->string('account_password')->toString())->id;
+            }
+
+            CustomerProfile::create($data);
+        });
 
         return redirect()
             ->route('management.customers.index')
-            ->with('success', 'Customer profile created successfully.');
+            ->with('success', $createsAccount ? 'Customer profile and account created successfully.' : 'Customer profile created successfully.');
     }
 
     public function edit(CustomerProfile $customer): View
@@ -55,11 +67,21 @@ class CustomerProfileController extends Controller
 
     public function update(CustomerProfileRequest $request, CustomerProfile $customer): RedirectResponse
     {
-        $customer->update($request->validated());
+        $createsAccount = $request->boolean('create_account');
+
+        DB::transaction(function () use ($request, $customer, $createsAccount): void {
+            $data = $request->profileData();
+
+            if ($createsAccount) {
+                $data['user_id'] = $this->createCustomerAccount($data, $request->string('account_password')->toString())->id;
+            }
+
+            $customer->update($data);
+        });
 
         return redirect()
             ->route('management.customers.index')
-            ->with('success', 'Customer profile updated successfully.');
+            ->with('success', $createsAccount ? 'Customer profile and account updated successfully.' : 'Customer profile updated successfully.');
     }
 
     public function toggleStatus(CustomerProfile $customer): RedirectResponse
@@ -83,5 +105,24 @@ class CustomerProfileController extends Controller
             })
             ->orderBy('name')
             ->get();
+    }
+
+    /**
+     * @param  array<string, mixed>  $profileData
+     */
+    private function createCustomerAccount(array $profileData, string $password): User
+    {
+        $customerRole = Role::where('name', 'customer')->firstOrFail();
+        $name = trim(implode(' ', array_filter([
+            $profileData['first_name'],
+            $profileData['last_name'] ?? null,
+        ])));
+
+        return User::create([
+            'role_id' => $customerRole->id,
+            'name' => $name,
+            'email' => $profileData['email'],
+            'password' => $password,
+        ]);
     }
 }

@@ -17,8 +17,8 @@
             <p class="mt-5 max-w-2xl text-lg leading-8 text-cream-200 sm:text-xl">A calmer way to plan restorative care. Book spa appointments, explore wellness services, and keep every visit beautifully organized.</p>
             <div class="mt-8 flex flex-col gap-3 sm:flex-row">
                 @guest
-                    <x-button :href="route('login')" variant="light">Log in to your account</x-button>
-                    <x-button :href="route('login')" variant="outline-light">Access appointment booking</x-button>
+                    <x-button :href="route('register')" variant="light">Register as a customer</x-button>
+                    <x-button :href="route('login')" variant="outline-light">Log in to your account</x-button>
                 @else
                     <x-button :href="route('dashboard')" variant="light">Open my dashboard</x-button>
                     @if (auth()->user()->isCustomer())
@@ -55,7 +55,7 @@
             <p class="mt-3 max-w-3xl leading-7 text-cocoa-500">Casa Paraiso brings appointment booking and service management together so the team can spend less time chasing details and more time creating a welcoming spa experience.</p>
         </div>
         @guest
-            <x-button :href="route('login')">Begin your wellness journey</x-button>
+            <x-button :href="route('register')">Begin your wellness journey</x-button>
         @else
             <x-button :href="route('dashboard')">Continue to your workspace</x-button>
         @endguest
