@@ -92,7 +92,7 @@
     </x-modal>
 
     <x-modal id="customer-edit-modal" title="Edit customer profile" description="Update guest and account-link details." size="xl" :open-on-load="$editHasErrors">
-        @include('management.customers._form', ['customer' => $emptyCustomer, 'isModal' => true, 'useOld' => $editHasErrors, 'formIdPrefix' => 'customer-edit', 'modalKey' => 'customer-edit', 'formMethod' => 'PUT', 'formAction' => old('_record_action', route('management.customers.index')), 'recordAction' => old('_record_action', ''), 'submitLabel' => 'Save changes'])
+        @include('management.customers._form', ['customer' => $emptyCustomer, 'isModal' => true, 'useOld' => $editHasErrors, 'formIdPrefix' => 'customer-edit', 'modalKey' => 'customer-edit', 'formMethod' => 'PUT', 'formAction' => old('_record_action', route('management.customers.index')), 'recordAction' => old('_record_action', ''), 'submitLabel' => 'Save Customer'])
     </x-modal>
 
     <x-modal id="customer-detail-modal" title="Customer details" description="Review the complete guest record." size="md"><div data-modal-detail-content></div></x-modal>

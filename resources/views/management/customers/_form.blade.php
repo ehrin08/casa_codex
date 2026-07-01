@@ -4,7 +4,7 @@
     $formIdPrefix = $formIdPrefix ?? 'customer-form';
     $formMethod = $formMethod ?? ($customer->exists ? 'PUT' : 'POST');
     $formAction = $formAction ?? ($customer->exists ? route('management.customers.update', $customer) : route('management.customers.store'));
-    $submitLabel = $submitLabel ?? ($customer->exists ? 'Save changes' : 'Create customer');
+    $submitLabel = $submitLabel ?? ($customer->exists ? 'Save Customer' : 'Create Customer');
     $modalKey = $modalKey ?? null;
     $recordAction = $recordAction ?? $formAction;
     $fieldValue = fn (string $name, mixed $value = null) => $useOld ? old($name, $value) : $value;

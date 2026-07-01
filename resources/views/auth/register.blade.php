@@ -13,9 +13,9 @@
                 </div>
                 <p class="mt-8 text-xs font-bold uppercase tracking-[0.2em] text-sage-200">Customer booking access</p>
                 <h1 class="mt-3 text-3xl font-black tracking-[0.1em]">CASA PARAISO</h1>
-                <p class="mt-5 text-base leading-7 text-cream-200">Use this account to book appointments and review your visits.</p>
+                <p class="mt-5 text-base leading-7 text-cream-200">Create your customer profile, verify your email, and book Casa Paraiso appointments with clearer visit details.</p>
             </div>
-            <p class="relative text-sm italic leading-6 text-cream-300">&ldquo;Your next restorative visit starts with a clear, simple account.&rdquo;</p>
+            <p class="relative text-sm italic leading-6 text-cream-300">&ldquo;A verified account keeps your spa visits easier to plan and easier to follow.&rdquo;</p>
         </aside>
 
         <div class="p-6 sm:p-10 lg:p-12">
@@ -24,7 +24,7 @@
                     <p class="text-xs font-black uppercase tracking-[0.2em] text-sage-700">Casa Paraiso</p>
                 </div>
                 <h2 class="mt-2 text-3xl font-semibold tracking-tight text-cocoa-950">Create your customer account</h2>
-                <p class="mt-2 text-sm leading-6 text-cocoa-500">Register as a customer to book appointments and keep your Casa Paraiso visits organized.</p>
+                <p class="mt-2 text-sm leading-6 text-cocoa-500">Register as a customer, verify your email, then choose the service and time that fit your next visit.</p>
 
                 <form method="POST" action="{{ route('register.store') }}" class="mt-8 space-y-5">
                     @csrf
@@ -35,13 +35,15 @@
                     <x-form.input name="password" label="Password" type="password" required autocomplete="new-password" />
                     <x-form.input name="password_confirmation" label="Confirm password" type="password" required autocomplete="new-password" />
 
-                    <x-button type="submit" class="mt-2 w-full">Create customer account</x-button>
+                    <x-button type="submit" class="mt-2 w-full">Create Customer Account</x-button>
                 </form>
 
-                <p class="mt-8 border-t border-cream-200 pt-5 text-center text-sm leading-6 text-cocoa-500">
-                    Already have an account?
-                    <a href="{{ route('login') }}" class="font-semibold text-sage-700 transition hover:text-sage-800">Log in</a>
-                </p>
+                @if (Route::has('login'))
+                    <p class="mt-8 border-t border-cream-200 pt-5 text-center text-sm leading-6 text-cocoa-500">
+                        Already have an account?
+                        <a href="{{ route('login') }}" class="font-semibold text-sage-700 transition hover:text-sage-800">Log in to continue</a>
+                    </p>
+                @endif
             </div>
         </div>
     </div>

@@ -28,8 +28,8 @@ class ManagementDashboardNavigationTest extends TestCase
         $response = $this->actingAs($manager)->get(route('management.index'));
 
         $response->assertOk();
-        $response->assertSee('Today’s Appointments');
-        $response->assertSee('Today’s Paid Revenue');
+        $response->assertSee('Today&rsquo;s Appointments', false);
+        $response->assertSee('Today&rsquo;s Paid Revenue', false);
         $response->assertSee('Pending Payments');
         $response->assertSee('Therapist Workload');
     }
@@ -42,9 +42,9 @@ class ManagementDashboardNavigationTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Book Walk-in');
-        $response->assertSee('Today’s Appointments');
+        $response->assertSee('Today&rsquo;s Appointments', false);
         $response->assertSee('Record Payment');
-        $response->assertSee('Print Reports');
+        $response->assertSee('View Reports');
     }
 
     public function test_dashboard_displays_attention_needed_section(): void
@@ -67,14 +67,14 @@ class ManagementDashboardNavigationTest extends TestCase
         $response->assertSee('Business Insights');
     }
 
-    public function test_dashboard_displays_secondary_management_links(): void
+    public function test_dashboard_keeps_secondary_management_links_in_sidebar(): void
     {
         $manager = $this->createUserWithRole('management');
 
         $response = $this->actingAs($manager)->get(route('management.index'));
 
         $response->assertOk();
-        $response->assertSee('Manage Records');
+        $response->assertDontSee('Manage Records');
         $response->assertSee('Services');
         $response->assertSee('Therapists');
         $response->assertSee('Customers');

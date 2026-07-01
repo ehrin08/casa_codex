@@ -107,9 +107,9 @@
             @elseif ($appointment->status === \App\Models\Appointment::STATUS_COMPLETED)
                 <x-card class="border-sage-200 bg-sage-50">
                     <p class="text-xs font-bold uppercase tracking-[0.16em] text-sage-700">Ready for payment</p>
-                    <h2 class="mt-1 text-lg font-semibold text-cocoa-950">Record cash transaction</h2>
+                    <h2 class="mt-1 text-lg font-semibold text-cocoa-950">Record Payment</h2>
                     <p class="mt-2 text-sm leading-6 text-cocoa-600">This completed appointment is eligible for one over-the-counter cash transaction.</p>
-                    <x-button :href="route('management.transactions.create', ['appointment_id' => $appointment->id])" class="mt-5 w-full">Record transaction</x-button>
+                    <x-button :href="route('management.transactions.create', ['appointment_id' => $appointment->id])" class="mt-5 w-full">Record Payment</x-button>
                 </x-card>
             @else
                 <x-alert title="Transaction not available">Set this appointment to completed before recording its cash transaction.</x-alert>

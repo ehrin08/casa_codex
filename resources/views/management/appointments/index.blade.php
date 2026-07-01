@@ -9,7 +9,7 @@
 
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <a href="{{ route('management.index') }}" class="spa-back-link"><span aria-hidden="true">&larr;</span> Management dashboard</a>
-        <x-button :href="route('management.walk-ins.create')" data-modal-open="walk-in-booking-modal">Book walk-in</x-button>
+        <x-button :href="route('management.walk-ins.create')" data-modal-open="walk-in-booking-modal">Book Walk-in</x-button>
     </div>
 
     <form method="GET" action="{{ route('management.appointments.index') }}" class="spa-panel mb-7 p-5 sm:p-6">
@@ -49,7 +49,7 @@
     </div>
     <div class="mt-6">{{ $appointments->links() }}</div>
 
-    <x-modal id="walk-in-booking-modal" title="Book a walk-in guest" description="Create a same-day or scheduled staff appointment." size="xl" :open-on-load="$walkInHasErrors">
+    <x-modal id="walk-in-booking-modal" title="Book Walk-in Guest" description="Create a same-day or scheduled staff appointment." size="xl" :open-on-load="$walkInHasErrors">
         @include('management.walk-ins._form', [
             'customers' => $walkInCustomers,
             'services' => $walkInServices,

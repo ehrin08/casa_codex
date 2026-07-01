@@ -4,7 +4,7 @@
     $formIdPrefix = $formIdPrefix ?? 'therapist-form';
     $formMethod = $formMethod ?? ($therapist->exists ? 'PUT' : 'POST');
     $formAction = $formAction ?? ($therapist->exists ? route('management.therapists.update', $therapist) : route('management.therapists.store'));
-    $submitLabel = $submitLabel ?? ($therapist->exists ? 'Save changes' : 'Create therapist');
+    $submitLabel = $submitLabel ?? ($therapist->exists ? 'Save Therapist' : 'Create Therapist');
     $modalKey = $modalKey ?? null;
     $recordAction = $recordAction ?? $formAction;
     $fieldValue = fn (string $name, mixed $value = null) => $useOld ? old($name, $value) : $value;

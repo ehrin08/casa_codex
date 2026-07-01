@@ -11,7 +11,7 @@
             <div class="mt-4 space-y-3 text-sm leading-6 text-cocoa-600">
                 <p>We sent a verification link to your email.</p>
                 <p>Please verify your email before booking an appointment.</p>
-                <p>Check your inbox for the verification link.</p>
+                <p>Check your inbox for the verification link, then return to choose your service and appointment time.</p>
             </div>
 
             @if (session('status') === 'verification-link-sent')

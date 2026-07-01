@@ -54,7 +54,7 @@ class WalkInAppointmentBookingTest extends TestCase
 
         $this->get(route('management.appointments.index'))
             ->assertOk()
-            ->assertSee('Book walk-in')
+            ->assertSee('Book Walk-in')
             ->assertSee(route('management.walk-ins.create'))
             ->assertSee('data-modal-open="walk-in-booking-modal"', false)
             ->assertSee('id="walk-in-booking-modal"', false)

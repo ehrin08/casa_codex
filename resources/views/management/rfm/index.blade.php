@@ -49,7 +49,7 @@
             <div class="flex gap-3">
                 <x-button type="submit">Apply filter</x-button>
                 @if ($selectedSegment)
-                    <x-button :href="route('management.rfm.index')" variant="secondary">Clear</x-button>
+                    <x-button :href="route('management.rfm.index')" variant="secondary">Clear filters</x-button>
                 @endif
             </div>
         </div>

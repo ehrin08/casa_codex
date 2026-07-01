@@ -5,8 +5,7 @@ namespace App\Http\Controllers\Management;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\CustomerProfileRequest;
 use App\Models\CustomerProfile;
-use App\Models\Role;
-use App\Models\User;
+use App\Services\ManagementProfileAccountService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +13,12 @@ use Illuminate\View\View;
 
 class CustomerProfileController extends Controller
 {
+    private const ROLE_NAME = 'customer';
+
+    private const PROFILE_RELATION = 'customerProfile';
+
+    public function __construct(private readonly ManagementProfileAccountService $accounts) {}
+
     public function index(): View
     {
         $customers = CustomerProfile::with('user')
@@ -21,11 +26,7 @@ class CustomerProfileController extends Controller
             ->orderBy('last_name')
             ->paginate(15);
 
-        $users = User::query()
-            ->whereHas('role', fn ($query) => $query->where('name', 'customer'))
-            ->with('customerProfile')
-            ->orderBy('name')
-            ->get();
+        $users = $this->availableUsers();
 
         return view('management.customers.index', compact('customers', 'users'));
     }
@@ -46,7 +47,9 @@ class CustomerProfileController extends Controller
             $data = $request->profileData();
 
             if ($createsAccount) {
-                $data['user_id'] = $this->createCustomerAccount($data, $request->string('account_password')->toString())->id;
+                $data['user_id'] = $this->accounts
+                    ->createLinkedAccount(self::ROLE_NAME, $data, $request->string('account_password')->toString())
+                    ->id;
             }
 
             CustomerProfile::create($data);
@@ -73,7 +76,9 @@ class CustomerProfileController extends Controller
             $data = $request->profileData();
 
             if ($createsAccount) {
-                $data['user_id'] = $this->createCustomerAccount($data, $request->string('account_password')->toString())->id;
+                $data['user_id'] = $this->accounts
+                    ->createLinkedAccount(self::ROLE_NAME, $data, $request->string('account_password')->toString())
+                    ->id;
             }
 
             $customer->update($data);
@@ -93,36 +98,6 @@ class CustomerProfileController extends Controller
 
     private function availableUsers(?CustomerProfile $customer = null): Collection
     {
-        return User::query()
-            ->whereHas('role', fn ($query) => $query->where('name', 'customer'))
-            ->with('customerProfile')
-            ->where(function ($query) use ($customer) {
-                $query->whereDoesntHave('customerProfile');
-
-                if ($customer?->user_id) {
-                    $query->orWhereKey($customer->user_id);
-                }
-            })
-            ->orderBy('name')
-            ->get();
-    }
-
-    /**
-     * @param  array<string, mixed>  $profileData
-     */
-    private function createCustomerAccount(array $profileData, string $password): User
-    {
-        $customerRole = Role::where('name', 'customer')->firstOrFail();
-        $name = trim(implode(' ', array_filter([
-            $profileData['first_name'],
-            $profileData['last_name'] ?? null,
-        ])));
-
-        return User::create([
-            'role_id' => $customerRole->id,
-            'name' => $name,
-            'email' => $profileData['email'],
-            'password' => $password,
-        ]);
+        return $this->accounts->availableUsers(self::ROLE_NAME, self::PROFILE_RELATION, $customer);
     }
 }

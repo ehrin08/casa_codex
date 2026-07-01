@@ -70,6 +70,6 @@
 
     <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <x-button :href="route('management.promotions.index')" variant="secondary">Cancel</x-button>
-        <x-button type="submit">{{ $promotion->exists ? 'Save changes' : 'Create promotion rule' }}</x-button>
+        <x-button type="submit">{{ $promotion->exists ? 'Save Promotion' : 'Create Promotion' }}</x-button>
     </div>
 </form>

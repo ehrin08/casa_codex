@@ -95,7 +95,7 @@
     </x-modal>
 
     <x-modal id="therapist-edit-modal" title="Edit therapist profile" description="Update care-team and account-link details." size="xl" :open-on-load="$editHasErrors">
-        @include('management.therapists._form', ['therapist' => $emptyTherapist, 'isModal' => true, 'useOld' => $editHasErrors, 'formIdPrefix' => 'therapist-edit', 'modalKey' => 'therapist-edit', 'formMethod' => 'PUT', 'formAction' => old('_record_action', route('management.therapists.index')), 'recordAction' => old('_record_action', ''), 'submitLabel' => 'Save changes'])
+        @include('management.therapists._form', ['therapist' => $emptyTherapist, 'isModal' => true, 'useOld' => $editHasErrors, 'formIdPrefix' => 'therapist-edit', 'modalKey' => 'therapist-edit', 'formMethod' => 'PUT', 'formAction' => old('_record_action', route('management.therapists.index')), 'recordAction' => old('_record_action', ''), 'submitLabel' => 'Save Therapist'])
     </x-modal>
 
     <x-modal id="therapist-detail-modal" title="Therapist details" description="Review the complete care-team record." size="md"><div data-modal-detail-content></div></x-modal>

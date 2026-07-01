@@ -10,7 +10,6 @@
             ['My Schedule', 'View today\'s guests and all upcoming assigned appointments.', 'therapist.schedule.index', 'Open schedule'],
             ['My Commissions', 'Review calculated earnings and commission settlement status.', 'therapist.commissions.index', 'View commissions'],
             ['Notifications', 'Review new assignments and appointment status updates.', 'notifications.index', 'View updates'],
-            ['Upcoming Appointments', 'Look ahead and prepare for each guest\'s selected service.', 'therapist.schedule.index', 'View upcoming'],
         ] as $section)
             <a href="{{ route($section[2]) }}" class="spa-panel group p-6 transition hover:-translate-y-0.5 hover:border-sage-200 hover:shadow-lg">
                 <div class="flex size-11 items-center justify-center rounded-full bg-sage-100 text-sage-700" aria-hidden="true">

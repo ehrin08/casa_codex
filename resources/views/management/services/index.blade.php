@@ -86,7 +86,7 @@
     </x-modal>
 
     <x-modal id="service-edit-modal" title="Edit service" description="Update treatment details while keeping the directory in view." :open-on-load="$editHasErrors">
-        @include('management.services._form', ['service' => $emptyService, 'isModal' => true, 'useOld' => $editHasErrors, 'formIdPrefix' => 'service-edit', 'modalKey' => 'service-edit', 'formMethod' => 'PUT', 'formAction' => old('_record_action', route('management.services.index')), 'recordAction' => old('_record_action', ''), 'submitLabel' => 'Save changes'])
+        @include('management.services._form', ['service' => $emptyService, 'isModal' => true, 'useOld' => $editHasErrors, 'formIdPrefix' => 'service-edit', 'modalKey' => 'service-edit', 'formMethod' => 'PUT', 'formAction' => old('_record_action', route('management.services.index')), 'recordAction' => old('_record_action', ''), 'submitLabel' => 'Save Service'])
     </x-modal>
 
     <x-modal id="service-detail-modal" title="Service details" description="Review the complete treatment record." size="md">

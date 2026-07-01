@@ -4,9 +4,8 @@ namespace App\Http\Controllers\Management;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\TherapistProfileRequest;
-use App\Models\Role;
 use App\Models\TherapistProfile;
-use App\Models\User;
+use App\Services\ManagementProfileAccountService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +13,12 @@ use Illuminate\View\View;
 
 class TherapistProfileController extends Controller
 {
+    private const ROLE_NAME = 'therapist';
+
+    private const PROFILE_RELATION = 'therapistProfile';
+
+    public function __construct(private readonly ManagementProfileAccountService $accounts) {}
+
     public function index(): View
     {
         $therapists = TherapistProfile::with('user')
@@ -21,11 +26,7 @@ class TherapistProfileController extends Controller
             ->orderBy('last_name')
             ->paginate(15);
 
-        $users = User::query()
-            ->whereHas('role', fn ($query) => $query->where('name', 'therapist'))
-            ->with('therapistProfile')
-            ->orderBy('name')
-            ->get();
+        $users = $this->availableUsers();
 
         return view('management.therapists.index', compact('therapists', 'users'));
     }
@@ -46,7 +47,9 @@ class TherapistProfileController extends Controller
             $data = $request->profileData();
 
             if ($createsAccount) {
-                $data['user_id'] = $this->createTherapistAccount($data, $request->string('account_password')->toString())->id;
+                $data['user_id'] = $this->accounts
+                    ->createLinkedAccount(self::ROLE_NAME, $data, $request->string('account_password')->toString())
+                    ->id;
             }
 
             TherapistProfile::create($data);
@@ -73,7 +76,9 @@ class TherapistProfileController extends Controller
             $data = $request->profileData();
 
             if ($createsAccount) {
-                $data['user_id'] = $this->createTherapistAccount($data, $request->string('account_password')->toString())->id;
+                $data['user_id'] = $this->accounts
+                    ->createLinkedAccount(self::ROLE_NAME, $data, $request->string('account_password')->toString())
+                    ->id;
             }
 
             $therapist->update($data);
@@ -95,36 +100,6 @@ class TherapistProfileController extends Controller
 
     private function availableUsers(?TherapistProfile $therapist = null): Collection
     {
-        return User::query()
-            ->whereHas('role', fn ($query) => $query->where('name', 'therapist'))
-            ->with('therapistProfile')
-            ->where(function ($query) use ($therapist) {
-                $query->whereDoesntHave('therapistProfile');
-
-                if ($therapist?->user_id) {
-                    $query->orWhereKey($therapist->user_id);
-                }
-            })
-            ->orderBy('name')
-            ->get();
-    }
-
-    /**
-     * @param  array<string, mixed>  $profileData
-     */
-    private function createTherapistAccount(array $profileData, string $password): User
-    {
-        $therapistRole = Role::where('name', 'therapist')->firstOrFail();
-        $name = trim(implode(' ', array_filter([
-            $profileData['first_name'],
-            $profileData['last_name'] ?? null,
-        ])));
-
-        return User::create([
-            'role_id' => $therapistRole->id,
-            'name' => $name,
-            'email' => $profileData['email'],
-            'password' => $password,
-        ]);
+        return $this->accounts->availableUsers(self::ROLE_NAME, self::PROFILE_RELATION, $therapist);
     }
 }

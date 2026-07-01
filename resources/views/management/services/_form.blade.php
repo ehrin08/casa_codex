@@ -4,7 +4,7 @@
     $formIdPrefix = $formIdPrefix ?? 'service-form';
     $formMethod = $formMethod ?? ($service->exists ? 'PUT' : 'POST');
     $formAction = $formAction ?? ($service->exists ? route('management.services.update', $service) : route('management.services.store'));
-    $submitLabel = $submitLabel ?? ($service->exists ? 'Save changes' : 'Create service');
+    $submitLabel = $submitLabel ?? ($service->exists ? 'Save Service' : 'Create Service');
     $modalKey = $modalKey ?? null;
     $recordAction = $recordAction ?? $formAction;
     $fieldValue = fn (string $name, mixed $value = null) => $useOld ? old($name, $value) : $value;

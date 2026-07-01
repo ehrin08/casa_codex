@@ -4,7 +4,7 @@
     $formIdPrefix = $formIdPrefix ?? 'availability-form';
     $formMethod = $formMethod ?? ($availability->exists ? 'PUT' : 'POST');
     $formAction = $formAction ?? ($availability->exists ? route('management.availability.update', $availability) : route('management.availability.store'));
-    $submitLabel = $submitLabel ?? ($availability->exists ? 'Save changes' : 'Create availability');
+    $submitLabel = $submitLabel ?? ($availability->exists ? 'Save Availability' : 'Create Availability');
     $modalKey = $modalKey ?? null;
     $recordAction = $recordAction ?? $formAction;
     $fieldValue = fn (string $name, mixed $value = null) => $useOld ? old($name, $value) : $value;

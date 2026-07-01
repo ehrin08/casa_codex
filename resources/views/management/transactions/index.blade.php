@@ -7,7 +7,7 @@
 @section('content')
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <a href="{{ route('management.index') }}" class="spa-back-link"><span aria-hidden="true">&larr;</span> Management dashboard</a>
-        <x-button :href="route('management.transactions.create')">Record cash transaction</x-button>
+        <x-button :href="route('management.transactions.create')">Record Payment</x-button>
     </div>
 
     <div class="spa-table-wrap">

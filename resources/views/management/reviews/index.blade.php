@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
 @section('title', 'Reviews & Sentiment | Casa Paraiso')
-@section('page_title', 'Reviews & Sentiment')
+@section('page_title')
+Reviews & Sentiment
+@endsection
 @section('page_description', 'Review customer feedback, ratings, and sentiment trends.')
 
 @section('content')

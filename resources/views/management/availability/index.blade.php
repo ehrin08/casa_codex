@@ -89,7 +89,7 @@
     </x-modal>
 
     <x-modal id="availability-edit-modal" title="Edit availability" description="Update the therapist working window." :open-on-load="$editHasErrors">
-        @include('management.availability._form', ['availability' => $emptyAvailability, 'isModal' => true, 'useOld' => $editHasErrors, 'formIdPrefix' => 'availability-edit', 'modalKey' => 'availability-edit', 'formMethod' => 'PUT', 'formAction' => old('_record_action', route('management.availability.index')), 'recordAction' => old('_record_action', ''), 'submitLabel' => 'Save changes'])
+        @include('management.availability._form', ['availability' => $emptyAvailability, 'isModal' => true, 'useOld' => $editHasErrors, 'formIdPrefix' => 'availability-edit', 'modalKey' => 'availability-edit', 'formMethod' => 'PUT', 'formAction' => old('_record_action', route('management.availability.index')), 'recordAction' => old('_record_action', ''), 'submitLabel' => 'Save Availability'])
     </x-modal>
 
     <x-modal id="availability-detail-modal" title="Availability details" description="Review the complete therapist working window." size="md"><div data-modal-detail-content></div></x-modal>

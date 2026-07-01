@@ -16,7 +16,7 @@
 
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <a href="{{ route('management.index') }}" class="spa-back-link"><span aria-hidden="true">&larr;</span> Management dashboard</a>
-        <x-button :href="route('management.promotions.create')">Create promotion rule</x-button>
+        <x-button :href="route('management.promotions.create')">Create Promotion</x-button>
     </div>
 
     @if (session('success'))
@@ -50,7 +50,7 @@
             <div class="flex gap-3">
                 <x-button type="submit">Apply filters</x-button>
                 @if ($selectedStatus || $selectedSegment)
-                    <x-button :href="route('management.promotions.index')" variant="secondary">Clear</x-button>
+                    <x-button :href="route('management.promotions.index')" variant="secondary">Clear filters</x-button>
                 @endif
             </div>
         </div>
@@ -58,7 +58,7 @@
 
     @if ($promotions->isEmpty() && ! $selectedStatus && ! $selectedSegment && $summary['total'] === 0)
         <x-empty-state title="No promotion rules yet" description="Create the first rule to define an RFM audience and discount settings.">
-            <x-slot:action><x-button :href="route('management.promotions.create')">Create promotion rule</x-button></x-slot:action>
+            <x-slot:action><x-button :href="route('management.promotions.create')">Create Promotion</x-button></x-slot:action>
         </x-empty-state>
     @else
         <div class="spa-table-wrap">

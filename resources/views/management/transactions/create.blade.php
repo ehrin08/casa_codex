@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Record Cash Transaction | Casa Paraiso')
-@section('page_title', 'Record Cash Transaction')
+@section('title', 'Record Payment | Casa Paraiso')
+@section('page_title', 'Record Payment')
 @section('page_description', 'Select a completed appointment and record its over-the-counter cash payment.')
 
 @section('content')
@@ -74,7 +74,7 @@
                     <x-form.textarea name="notes" label="Transaction notes (optional)" rows="4" maxlength="2000" wrapper-class="sm:col-span-2" />
                 </div>
 
-                <div class="mt-7 flex flex-col-reverse gap-3 border-t border-cream-200 pt-6 sm:flex-row sm:justify-end"><x-button :href="route('management.transactions.index')" variant="secondary">Cancel</x-button><x-button type="submit">Record cash transaction</x-button></div>
+                <div class="mt-7 flex flex-col-reverse gap-3 border-t border-cream-200 pt-6 sm:flex-row sm:justify-end"><x-button :href="route('management.transactions.index')" variant="secondary">Cancel</x-button><x-button type="submit">Record Payment</x-button></div>
             </form>
 
             <aside class="space-y-5 lg:sticky lg:top-28">

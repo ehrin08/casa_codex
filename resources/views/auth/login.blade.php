@@ -13,9 +13,9 @@
                 </div>
                 <p class="mt-8 text-xs font-bold uppercase tracking-[0.2em] text-sage-200">Body and Wellness Spa</p>
                 <h1 class="mt-3 text-3xl font-black tracking-[0.1em]">CASA PARAISO</h1>
-                <p class="mt-5 text-base leading-7 text-cream-200">Step into your dedicated space for caring service, considered schedules, and restorative moments.</p>
+                <p class="mt-5 text-base leading-7 text-cream-200">Customers can manage booking access after email verification, while staff can sign in to support every scheduled visit.</p>
             </div>
-            <p class="relative text-sm italic leading-6 text-cream-300">&ldquo;Wellness begins with a moment made just for you.&rdquo;</p>
+            <p class="relative text-sm italic leading-6 text-cream-300">&ldquo;Wellness begins with a visit that feels prepared before you arrive.&rdquo;</p>
         </aside>
 
         <div class="p-6 sm:p-10 lg:p-12">
@@ -24,7 +24,7 @@
                     <p class="text-xs font-black uppercase tracking-[0.2em] text-sage-700">Casa Paraiso</p>
                 </div>
                 <h2 class="mt-2 text-3xl font-semibold tracking-tight text-cocoa-950">Welcome back</h2>
-                <p class="mt-2 text-sm leading-6 text-cocoa-500">Sign in to continue to your Casa Paraiso workspace.</p>
+                <p class="mt-2 text-sm leading-6 text-cocoa-500">Sign in to continue booking appointments, reviewing visits, or supporting Casa Paraiso customers.</p>
 
                 <form method="POST" action="{{ route('login.store') }}" class="mt-8 space-y-5">
                     @csrf
@@ -32,13 +32,15 @@
                     <x-form.input name="email" label="Email address" type="email" :value="old('email')" required autofocus autocomplete="email" />
                     <x-form.input name="password" label="Password" type="password" required autocomplete="current-password" />
 
-                    <x-button type="submit" class="mt-2 w-full">Log in securely</x-button>
+                    <x-button type="submit" class="mt-2 w-full">Log In</x-button>
                 </form>
 
-                <p class="mt-8 border-t border-cream-200 pt-5 text-center text-sm leading-6 text-cocoa-500">
-                    Need a customer account?
-                    <a href="{{ route('register') }}" class="font-semibold text-sage-700 transition hover:text-sage-800">Register as a customer</a>
-                </p>
+                @if (Route::has('register'))
+                    <p class="mt-8 border-t border-cream-200 pt-5 text-center text-sm leading-6 text-cocoa-500">
+                        Need a customer account?
+                        <a href="{{ route('register') }}" class="font-semibold text-sage-700 transition hover:text-sage-800">Create one for booking</a>
+                    </p>
+                @endif
             </div>
         </div>
     </div>

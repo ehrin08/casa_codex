@@ -118,12 +118,18 @@
                 <x-sidebar :sections="$navigationSections" :user="$user" :role-label="$roleLabel" :unread-count="$unreadNotificationCount" />
                 <x-mobile-sidebar :sections="$navigationSections" :user="$user" :role-label="$roleLabel" :unread-count="$unreadNotificationCount" />
             @else
+                @php
+                    $guestHomeUrl = Route::has('home') ? route('home') : url('/');
+                    $guestLoginUrl = Route::has('login') ? route('login') : $guestHomeUrl;
+                    $guestRegisterUrl = Route::has('register') ? route('register') : $guestLoginUrl;
+                    $guestBookingUrl = Route::has('register') ? $guestRegisterUrl : $guestLoginUrl;
+                @endphp
                 <div class="bg-cocoa-900 px-4 py-2 text-center text-xs font-medium tracking-wide text-cream-200">
                     Your quiet place for wellness appointments and spa care
                 </div>
                 <header class="sticky top-0 z-40 border-b border-cream-200/80 bg-cream-50/95 shadow-sm backdrop-blur">
-                    <div class="mx-auto flex w-full max-w-7xl items-center justify-between gap-5 px-4 py-3 sm:px-6 lg:px-8">
-                        <a href="{{ route('home') }}" class="group flex shrink-0 items-center gap-3 rounded-lg" aria-label="Casa Paraiso home">
+                    <div class="mx-auto flex w-full max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+                        <a href="{{ $guestHomeUrl }}" class="group flex shrink-0 items-center gap-3 rounded-lg" aria-label="Casa Paraiso home">
                             <span class="flex size-11 items-center justify-center rounded-full bg-sage-700 text-cream-50 shadow-sm transition group-hover:bg-sage-800" aria-hidden="true">
                                 <svg viewBox="0 0 32 32" fill="none" class="size-7" stroke="currentColor" stroke-width="1.7"><path d="M25.5 5.5C17 6 10.8 10.8 10.8 19.2M6.5 26c2.1-7.9 8.1-12.8 18.1-15.2" stroke-linecap="round"/><path d="M25.5 5.5c.6 8.7-3.2 14-10.1 14.4-2.8.2-4.7-.9-4.7-.9s-1.3-2-.9-4.4C10.7 8.4 17.1 5.2 25.5 5.5Z" stroke-linejoin="round"/></svg>
                             </span>
@@ -132,9 +138,11 @@
                                 <span class="block text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-sage-700">Body and Wellness Spa</span>
                             </span>
                         </a>
-                        <div class="flex items-center gap-2">
-                            <x-button :href="route('register')" variant="secondary">Register</x-button>
-                            <x-button :href="route('login')">Log in</x-button>
+                        <div class="flex flex-wrap items-center gap-2">
+                            @if (Route::has('login'))
+                                <x-button :href="$guestLoginUrl" variant="ghost">Log In</x-button>
+                            @endif
+                            <x-button :href="$guestBookingUrl">Book Appointment</x-button>
                         </div>
                     </div>
                 </header>
@@ -187,7 +195,7 @@
                             <p class="font-black tracking-[0.12em] text-cream-50">CASA PARAISO</p>
                             <p class="mt-1 text-xs uppercase tracking-[0.16em] text-cream-300">Body and Wellness Spa</p>
                         </div>
-                        <p class="max-w-md text-sm leading-6 text-cream-300 md:text-right">Wellness appointment booking and thoughtful spa service management in one calm workspace.</p>
+                        <p class="max-w-md text-sm leading-6 text-cream-300 md:text-right">Wellness appointment booking, verified customer access, and thoughtful spa service coordination in one calm system.</p>
                     </div>
                 </footer>
             </div>
